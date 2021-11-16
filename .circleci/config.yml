@@ -38,22 +38,19 @@ jobs:
           no_output_timeout: 3h
           command: |
             # Get version, update files.
-            THISVERSION=$( python3 get_version.py )
-            if [[ ${THISVERSION:0:1} == "0" ]] ; then
-              echo "WARNING: latest git tag could not be found"
-              echo "Please, make sure you fetch all tags from upstream with"
-              echo "the command ``git fetch --tags --verbose`` and push"
-              echo "them to your fork with ``git push origin --tags``"
+            TAG=unstable
+            if [ -z ${CIRCLE_TAG} ]; then
+              TAG=${CIRCLE_TAG}
             fi
-            # Build docker image
+
             e=1 && for i in {1..5}; do
               docker build \
                 --cache-from=pennbbl/qsiprep_build \
                 --rm=false \
-                -t pennbbl/qsiprep_build:latest \
+                -t pennbbl/qsiprep_build:${TAG} \
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
                 --build-arg VCS_REF=`git rev-parse --short HEAD` \
-                --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" . \
+                --build-arg VERSION="${TAG}" . \
               && e=0 && break || sleep 15
             done && [ "$e" -eq "0" ]
 
