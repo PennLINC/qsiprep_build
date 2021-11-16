@@ -39,7 +39,7 @@ jobs:
           command: |
             # Get version, update files.
             TAG=unstable
-            if [ -z ${CIRCLE_TAG} ]; then
+            if [ -n ${CIRCLE_TAG} ]; then
               TAG=${CIRCLE_TAG}
             fi
 
