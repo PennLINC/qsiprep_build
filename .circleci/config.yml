@@ -37,20 +37,14 @@ jobs:
           name: Build Docker image
           no_output_timeout: 3h
           command: |
-            # Get version, update files.
-            TAG=unstable
-            if [ -n ${CIRCLE_TAG} ]; then
-              TAG=${CIRCLE_TAG}
-            fi
-
+            # Get version, update files
             e=1 && for i in {1..5}; do
               docker build \
                 --cache-from=pennbbl/qsiprep_build \
                 --rm=false \
-                -t pennbbl/qsiprep_build:${TAG} \
+                -t pennbbl/qsiprep_build:unstable \
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg VCS_REF=`git rev-parse --short HEAD` \
-                --build-arg VERSION="${TAG}" . \
+                --build-arg VCS_REF=`git rev-parse --short HEAD` . \
               && e=0 && break || sleep 15
             done && [ "$e" -eq "0" ]
 
