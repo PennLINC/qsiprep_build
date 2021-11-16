@@ -1,0 +1,146 @@
+version: 2
+jobs:
+
+  build:
+    environment:
+      TZ: "/usr/share/zoneinfo/America/New_York"
+      SCRATCH: "/scratch"
+    docker:
+      - image: docker:18.06.1-ce-git
+    working_directory: /tmp/src/qsiprep
+    steps:
+      - checkout
+      - run:
+          name: Install parallel gzip and python3
+          command: |
+            apk add --no-cache pigz python3 tar
+      - restore_cache:
+          keys:
+            - docker-v10-{{ .Branch }}-{{ .Revision }}
+            - docker-v10-{{ .Branch }}-
+            - docker-v10-main-
+            - docker-v10-
+          paths:
+            - /tmp/cache/docker.tar.gz
+      - setup_remote_docker
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Build Docker image
+          no_output_timeout: 3h
+          command: |
+            # Get version, update files.
+            THISVERSION=$( python3 get_version.py )
+            if [[ ${THISVERSION:0:1} == "0" ]] ; then
+              echo "WARNING: latest git tag could not be found"
+              echo "Please, make sure you fetch all tags from upstream with"
+              echo "the command ``git fetch --tags --verbose`` and push"
+              echo "them to your fork with ``git push origin --tags``"
+            fi
+            sed -i -E "s/(__version__ = )'[A-Za-z0-9.-]+'/\1'${CIRCLE_TAG:-$THISVERSION}'/" wrapper/qsiprep_docker.py
+            sed -i -E "s/(var version = )'[A-Za-z0-9.-]+'/\1'${CIRCLE_TAG:-$THISVERSION}'/" docs/citing.rst
+            sed -i "s/title = {qsiprep}/title = {qsiprep ${CIRCLE_TAG:-$THISVERSION}}/" qsiprep/data/boilerplate.bib
+            # Build docker image
+            e=1 && for i in {1..5}; do
+              docker build \
+                --cache-from=pennbbl/qsiprep \
+                --rm=false \
+                -t pennbbl/qsiprep:latest \
+                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+                --build-arg VCS_REF=`git rev-parse --short HEAD` \
+                --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" . \
+              && e=0 && break || sleep 15
+            done && [ "$e" -eq "0" ]
+      - run:
+          name: Docker save
+          no_output_timeout: 40m
+          command: |
+            mkdir -p /tmp/cache
+            docker save nvidia/cuda:9.1-runtime-ubuntu16.04 pennbbl/qsiprep:latest \
+            | pigz -3 > /tmp/cache/docker.tar.gz
+
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - src/qsiprep
+
+      - save_cache:
+         key: docker-v10-{{ .Branch }}-{{ .Revision }}-{{ epoch }}
+         paths:
+           - /tmp/cache/docker.tar.gz
+
+  deploy_docker:
+    machine:
+      image: circleci/classic:201711-01
+    working_directory: /tmp/src/qsiprep
+    steps:
+      - checkout:
+          path: /home/circleci/src/qsiprep
+      - run:
+          name: Check whether build should be skipped
+          command: |
+            cd /home/circleci/src/qsiprep
+            if [[ "$( git log --format='format:%s' -n 1 $CIRCLE_SHA1 | grep -i -E '^docs?(\(\w+\))?:' )" != "" ]]; then
+              echo "Only docs build"
+              circleci step halt
+            fi
+      - restore_cache:
+          keys:
+            - docker-v10-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              sudo apt update && sudo apt -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Deploy to Docker Hub
+          no_output_timeout: 40m
+          command: |
+            if [[ -n "$DOCKER_PASS" ]]; then
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+              docker tag pennbbl/qsiprep pennbbl/qsiprep:unstable
+              docker push pennbbl/qsiprep:unstable
+              if [[ -n "$CIRCLE_TAG" ]]; then
+                docker push pennbbl/qsiprep:latest
+                docker tag pennbbl/qsiprep pennbbl/qsiprep:$CIRCLE_TAG
+                docker push pennbbl/qsiprep:$CIRCLE_TAG
+              fi
+            fi
+  deployable:
+    docker:
+      - image: busybox:latest
+    steps:
+      - run: echo Deploying!
+
+
+workflows:
+  version: 2
+  build_test_deploy:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+
+      - deploy_docker:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
+            tags:
+              only: /.*/
