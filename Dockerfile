@@ -28,6 +28,7 @@ FROM nvidia/cuda:9.1-runtime-ubuntu16.04
 
 # Pre-cache neurodebian key
 COPY docker/files/neurodebian.gpg /usr/local/etc/neurodebian.gpg
+ARG buildcpus=4
 
 # Prepare environment
 RUN apt-get update && \
@@ -185,7 +186,7 @@ RUN mkdir /opt/dsi-studio \
   && mv TIPL-${TIPL_SHA} src/tipl \
   && rm ${TIPL_SHA}.zip \
   && mkdir build && cd build \
-  && /opt/qt512/bin/qmake ../src && make \
+  && /opt/qt512/bin/qmake ../src && make -j ${buildcpus} \
   && cd /opt/dsi-studio \
   && curl -sSLO 'https://upenn.box.com/shared/static/01r73d4a15utl13himv4d7cjpa6etf6z.gz' \
   && tar xvfz 01r73d4a15utl13himv4d7cjpa6etf6z.gz \
@@ -220,34 +221,6 @@ RUN cd /opt \
     && ./configure -nogui \
     && echo "Compiling MRtrix3-3Tissue ..." \
     && ./build
-
-# Installing ANTs latest from source
-ARG ANTS_SHA=e00e8164d7a92f048e5d06e388a15c1ee8e889c4
-# Add file originally from https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh
-COPY docker/files/cmake-3.11.4-Linux-x86_64.sh  /cmake-3.11.4-Linux-x86_64.sh
-ENV ANTSPATH="/opt/ants-latest/bin" \
-    PATH="/opt/ants-latest/bin:$PATH" \
-    LD_LIBRARY_PATH="/opt/ants-latest/lib:$LD_LIBRARY_PATH"
-RUN mkdir /opt/cmake \
-  && sh /cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license \
-  && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
-  && apt-get update -qq \
-    && mkdir /tmp/ants \
-    && cd /tmp \
-    && git clone https://github.com/ANTsX/ANTs.git \
-    && mv ANTs /tmp/ants/source \
-    && cd /tmp/ants/source \
-    && git checkout ${ANTS_SHA} \
-    && mkdir -p /tmp/ants/build \
-    && cd /tmp/ants/build \
-    && mkdir -p /opt/ants-latest \
-    && git config --global url."https://".insteadOf git:// \
-    && cmake -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/ants-latest /tmp/ants/source \
-    && make -j2 \
-    && cd ANTS-build \
-    && make install \
-    && rm -rf /tmp/ants \
-    && rm -rf /opt/cmake /usr/local/bin/cmake /cmake-3.11.4-Linux-x86_64.sh
 
 ENV C3DPATH="/opt/convert3d-nightly" \
     PATH="/opt/convert3d-nightly/bin:$PATH"
@@ -288,12 +261,40 @@ ENV CRN_SHARED_DATA /niworkflows_data
 ADD docker/scripts/get_templates.sh get_templates.sh
 RUN mkdir $CRN_SHARED_DATA && \
     /root/get_templates.sh && \
-    chmod -R a+rX $CRN_SHARED_DATA && \
-    echo "add OASIS30"
+    chmod -R a+rX $CRN_SHARED_DATA
 
 RUN ln -s /opt/fsl-6.0.3/bin/eddy_cuda9.1 /opt/fsl-6.0.3/bin/eddy_cuda
 
-ENV AFNI_INSTALLDIR=/usr/lib/afni \
+# Installing ANTs latest from source
+ARG ANTS_SHA=e00e8164d7a92f048e5d06e388a15c1ee8e889c4
+# Add file originally from https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh
+COPY docker/files/cmake-3.11.4-Linux-x86_64.sh  /cmake-3.11.4-Linux-x86_64.sh
+RUN mkdir /opt/cmake \
+  && sh /cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license \
+  && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
+  && apt-get update -qq \
+    && mkdir /tmp/ants \
+    && cd /tmp \
+    && git clone https://github.com/ANTsX/ANTs.git \
+    && mv ANTs /tmp/ants/source \
+    && cd /tmp/ants/source \
+    && git checkout ${ANTS_SHA} \
+    && mkdir -p /tmp/ants/build \
+    && cd /tmp/ants/build \
+    && mkdir -p /opt/ants-latest \
+    && git config --global url."https://".insteadOf git:// \
+    && cmake -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/ants-latest /tmp/ants/source \
+    && make -j ${buildcpus} \
+    && cd ANTS-build \
+    && make install \
+    && rm -rf /tmp/ants \
+    && rm -rf /opt/cmake /usr/local/bin/cmake /cmake-3.11.4-Linux-x86_64.sh
+
+
+ENV ANTSPATH="/opt/ants-latest/bin" \
+    PATH="/opt/ants-latest/bin:$PATH" \
+    LD_LIBRARY_PATH="/opt/ants-latest/lib:$LD_LIBRARY_PATH" \
+    AFNI_INSTALLDIR=/usr/lib/afni \
     PATH=${PATH}:/usr/lib/afni/bin \
     AFNI_PLUGINPATH=/usr/lib/afni/plugins \
     AFNI_MODELPATH=/usr/lib/afni/models \

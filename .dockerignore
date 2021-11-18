@@ -1,16 +1,9 @@
-Dockerfile
-.dockerignore
-README.md
-LICENSE
-
-# git
-.gitignore
-.git/**/*
-.git
-
-# CI, etc.
+**/.git
+**/.DS_Store
+**/*.log
+**/Thumbs.db
 .circleci
-.circleci/**/*
-.travis.yml
-.readthedocs.yml
-CONTRIBUTING.md
+.circleci/config.yml
+.gitignore
+LICENSE
+README.rst
