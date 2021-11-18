@@ -1,7 +1,5 @@
 Dockerfile
 .dockerignore
-docker
-docker/**/*
 README.md
 LICENSE
 
