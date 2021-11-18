@@ -223,7 +223,8 @@ RUN cd /opt \
 
 # Installing ANTs latest from source
 ARG ANTS_SHA=e00e8164d7a92f048e5d06e388a15c1ee8e889c4
-ADD https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh /cmake-3.11.4-Linux-x86_64.sh
+# Add file originally from https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh
+COPY docker/files/cmake-3.11.4-Linux-x86_64.sh  /cmake-3.11.4-Linux-x86_64.sh
 ENV ANTSPATH="/opt/ants-latest/bin" \
     PATH="/opt/ants-latest/bin:$PATH" \
     LD_LIBRARY_PATH="/opt/ants-latest/lib:$LD_LIBRARY_PATH"
@@ -252,7 +253,7 @@ ENV C3DPATH="/opt/convert3d-nightly" \
     PATH="/opt/convert3d-nightly/bin:$PATH"
 RUN echo "Downloading Convert3D ..." \
     && mkdir -p /opt/convert3d-nightly \
-    && curl -fsSL --retry 5 https://sourceforge.net/projects/c3d/files/c3d/Nightly/c3d-nightly-Linux-x86_64.tar.gz/download \
+    && curl -fsSLk --retry 5 https://sourceforge.net/projects/c3d/files/c3d/Nightly/c3d-nightly-Linux-x86_64.tar.gz/download \
     | tar -xz -C /opt/convert3d-nightly --strip-components 1
 
 # Create a shared $HOME directory
@@ -269,9 +270,9 @@ RUN npm install -g svgo
 RUN npm install -g bids-validator@1.2.3
 
 # Installing and setting up miniconda
-RUN curl -sSLO https://repo.continuum.io/miniconda/Miniconda3-4.5.12-Linux-x86_64.sh && \
-    bash Miniconda3-4.5.12-Linux-x86_64.sh -b -p /usr/local/miniconda && \
-    rm Miniconda3-4.5.12-Linux-x86_64.sh
+RUN curl -sSLO https://repo.anaconda.com/miniconda/Miniconda3-py38_4.10.3-Linux-x86_64.sh && \
+    bash Miniconda3-py38_4.10.3-Linux-x86_64.sh -b -p /usr/local/miniconda && \
+    rm Miniconda3-py38_4.10.3-Linux-x86_64.sh
 
 # Unless otherwise specified each process should only use one thread - nipype
 # will handle parallelization
