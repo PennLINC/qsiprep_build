@@ -36,16 +36,14 @@ jobs:
             fi
       - run:
           name: Build Docker image
-          no_output_timeout: 3h
+          no_output_timeout: 4h
           command: |
             # Get version, update files
             e=1 && for i in {1..5}; do
               docker build \
                 --cache-from=pennbbl/qsiprep_build \
                 --rm=false \
-                -t pennbbl/qsiprep_build:unstable \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg VCS_REF=`git rev-parse --short HEAD` . \
+                -t pennbbl/qsiprep_build:latest
               && e=0 && break || sleep 15
             done && [ "$e" -eq "0" ]
 
