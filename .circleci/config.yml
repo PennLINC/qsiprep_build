@@ -7,7 +7,6 @@ jobs:
       SCRATCH: "/scratch"
     docker:
       - image: docker:18.06.1-ce-git
-    resource_class: large
     working_directory: /tmp/src/qsiprep_build
     steps:
       - checkout
