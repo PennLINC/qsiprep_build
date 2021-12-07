@@ -35,7 +35,7 @@ jobs:
             fi
       - run:
           name: Build Docker image
-          no_output_timeout: 4h
+          no_output_timeout: 5h
           command: |
               docker build \
                 --cache-from=pennbbl/qsiprep_build \
@@ -44,7 +44,7 @@ jobs:
 
       - run:
           name: Docker save
-          no_output_timeout: 40m
+          no_output_timeout: 1h 
           command: |
             mkdir -p /tmp/cache
             docker save nvidia/cuda:9.1-runtime-ubuntu16.04 pennbbl/qsiprep_build:latest \
@@ -52,7 +52,7 @@ jobs:
 
       - run:
           name: Deploy to Docker Hub
-          no_output_timeout: 40m
+          no_output_timeout: 1h
           command: |
             if [[ -n "$DOCKER_PASS" ]]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
