@@ -33,53 +33,60 @@ ARG buildcpus=2
 # Prepare environment
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-                    curl \
+                    autoconf \
+                    bc \
+                    build-essential \
                     bzip2 \
                     ca-certificates \
-                    xvfb \
-                    cython3 \
-                    build-essential \
-                    autoconf \
-                    libtool \
-                    pkg-config \
-                    bc \
+                    curl \
                     dc \
                     file \
-                    libopenblas-base \
+                    freeglut3-dev \
+                    freetds-common \
+                    g++ \
+                    gcc \
+                    gfortran \
+                    git \
+                    imagemagick \
+                    libblas-dev \
+                    libboost-all-dev \
+                    libclang1-5.0 \
+                    libeigen3-dev \
+                    libfftw3-dev libtiff5-dev \
                     libfontconfig1 \
                     libfreetype6 \
                     libgl1-mesa-dev \
+                    libgl1-mesa-dev \
+                    libglu1-mesa-dev \
                     libglu1-mesa-dev \
                     libgomp1 \
                     libice6 \
+                    liblapack-dev \
+                    libllvm5.0 \
+                    libodbc1 \
+                    libopenblas-base \
+                    libsdl2-2.0-0 \
+                    libsndio6.1 \
+                    libsybdb5 \
+                    libtool \
+                    libxcb-xinerama0 \
                     libxcursor1 \
                     libxft2 \
                     libxinerama1 \
                     libxrandr2 \
                     libxrender1 \
                     libxt6 \
-                    wget \
-                    libboost-all-dev \
-                    zlib1g \
-                    zlib1g-dev \
-                    libfftw3-dev libtiff5-dev \
-                    libqt5opengl5-dev \
-                    unzip \
-                    libgl1-mesa-dev \
-                    libglu1-mesa-dev \
-                    freeglut3-dev \
-                    mesa-utils \
-                    g++ \
-                    gcc \
-                    libeigen3-dev \
-                    libqt5svg5* \
                     make \
+                    mesa-utils \
+                    pkg-config \
                     python \
                     python-numpy \
-                    zlib1g-dev \
-                    imagemagick \
                     software-properties-common \
-                    git && \
+                    unzip \
+                    wget \
+                    xvfb \
+                    zlib1g \
+                    zlib1g-dev && \
     curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
     apt-get install -y --no-install-recommends \
       nodejs && \
@@ -94,8 +101,7 @@ RUN curl -o pandoc-2.2.2.1-1-amd64.deb -sSL "https://github.com/jgm/pandoc/relea
 RUN add-apt-repository ppa:beineri/opt-qt-5.12.2-xenial \
     && apt-get update \
     && apt install -y --no-install-recommends \
-    freetds-common libclang1-5.0 libllvm5.0 libodbc1 libsdl2-2.0-0 libsndio6.1 \
-    libsybdb5 libxcb-xinerama0 qt5123d qt512base qt512canvas3d \
+    qt5123d qt512base qt512canvas3d \
     qt512connectivity qt512declarative qt512graphicaleffects \
     qt512imageformats qt512location qt512multimedia qt512scxml qt512svg \
     qt512wayland qt512x11extras qt512xmlpatterns qt512charts-no-lgpl \
@@ -292,7 +298,6 @@ RUN mkdir /opt/cmake \
 
 
 ENV ANTSPATH="/opt/ants-latest/bin" \
-    PATH="/opt/ants-latest/bin:$PATH" \
     LD_LIBRARY_PATH="/opt/ants-latest/lib:$LD_LIBRARY_PATH" \
     AFNI_INSTALLDIR=/usr/lib/afni \
     PATH=${PATH}:/usr/lib/afni/bin \
@@ -304,6 +309,8 @@ ENV ANTSPATH="/opt/ants-latest/bin" \
     MRTRIX_NTHREADS=1 \
     IS_DOCKER_8395080871=1 \
     DIPY_HOME=/home/qsiprep/.dipy
+
+ENV PATH="/usr/local/miniconda/bin:${ANTSPATH}:${PATH}"
 
 # Make singularity mount directories
 RUN  mkdir -p /sngl/data \
