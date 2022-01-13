@@ -145,7 +145,7 @@ RUN curl -sSL https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.1/frees
       && sed -i -e "/fsleyes/d" -e "/wxpython/d" \
          ${FSLDIR}/etc/fslconf/fslpython_environment.yml \
       && bash /opt/fsl-6.0.5/etc/fslconf/fslpython_install.sh -f /opt/fsl-6.0.5 \
-      && find ${FSLDIR}/fslpython/envs/fslpython/lib/python3.7/site-packages/ -type d -name "tests"  -print0 | xargs -0 rm -r \
+      && find ${FSLDIR}/fslpython/envs/fslpython/lib/python3*/site-packages/ -type d -name "tests"  -print0 | xargs -0 rm -r \
       && ${FSLDIR}/fslpython/bin/conda clean --all
 
 ENV FREESURFER_HOME=/opt/freesurfer \
