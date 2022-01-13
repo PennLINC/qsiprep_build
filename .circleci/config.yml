@@ -13,42 +13,16 @@ jobs:
       - run:
           name: Install parallel gzip and python3
           command: |
-            apk add --no-cache pigz python3 tar
-      - restore_cache:
-          keys:
-            - docker-v10-{{ .Branch }}-{{ .Revision }}
-            - docker-v10-{{ .Branch }}-
-            - docker-v10-main-
-            - docker-v10-
-          paths:
-            - /tmp/cache/docker.tar.gz
+            apk add --no-cache python3 tar
       - setup_remote_docker
-      - run:
-          name: Load Docker image layer cache
-          no_output_timeout: 30m
-          command: |
-            docker info
-            set +o pipefail
-            if [ -f /tmp/cache/docker.tar.gz ]; then
-              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
-              docker images
-            fi
+
       - run:
           name: Build Docker image
           no_output_timeout: 5h
           command: |
               docker build \
-                --cache-from=pennbbl/qsiprep_build \
                 --rm=false \
                 -t pennbbl/qsiprep_build:latest .
-
-      - run:
-          name: Docker save
-          no_output_timeout: 1h 
-          command: |
-            mkdir -p /tmp/cache
-            docker save nvidia/cuda:9.1-runtime-ubuntu16.04 pennbbl/qsiprep_build:latest \
-            | pigz -3 > /tmp/cache/docker.tar.gz
 
       - run:
           name: Deploy to Docker Hub
@@ -62,11 +36,6 @@ jobs:
                 docker push pennbbl/qsiprep_build:$CIRCLE_TAG
               fi
             fi
-
-      - save_cache:
-         key: docker-v10-{{ .Branch }}-{{ .Revision }}-{{ epoch }}
-         paths:
-           - /tmp/cache/docker.tar.gz
 
 
 workflows:
