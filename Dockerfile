@@ -132,7 +132,7 @@ RUN curl -sSL https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.1/frees
       PATH="/opt/fsl-6.0.5/bin:$PATH"
   RUN echo "Downloading FSL ..." \
       && mkdir -p /opt/fsl-6.0.5 \
-      && curl -fsSL --retry 5 https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos6_64.tar.gz \
+      && curl -fsSL --retry 5 https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz \
       | tar -xz -C /opt/fsl-6.0.5 --strip-components 1 \
       --exclude='fsl/doc' \
       --exclude='fsl/data/atlases' \
