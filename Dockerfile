@@ -59,6 +59,7 @@ RUN apt-get update && \
                     libgl1-mesa-dev \
                     libglu1-mesa-dev \
                     libglu1-mesa-dev \
+                    libgnutls30 \
                     libgomp1 \
                     libice6 \
                     liblapack-dev \
@@ -127,12 +128,12 @@ RUN curl -sSL https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.1/frees
     --exclude='freesurfer/lib/cuda' \
     --exclude='freesurfer/lib/qt'
 
-  ENV FSLDIR="/opt/fsl-6.0.3" \
-      PATH="/opt/fsl-6.0.3/bin:$PATH"
+  ENV FSLDIR="/opt/fsl-6.0.5" \
+      PATH="/opt/fsl-6.0.5/bin:$PATH"
   RUN echo "Downloading FSL ..." \
-      && mkdir -p /opt/fsl-6.0.3 \
-      && curl -fsSL --retry 5 https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.3-centos6_64.tar.gz \
-      | tar -xz -C /opt/fsl-6.0.3 --strip-components 1 \
+      && mkdir -p /opt/fsl-6.0.5 \
+      && curl -fsSL --retry 5 https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos6_64.tar.gz \
+      | tar -xz -C /opt/fsl-6.0.5 --strip-components 1 \
       --exclude='fsl/doc' \
       --exclude='fsl/data/atlases' \
       --exclude='fsl/data/possum' \
@@ -143,7 +144,7 @@ RUN curl -sSL https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.1/frees
       && echo "Installing FSL conda environment ..." \
       && sed -i -e "/fsleyes/d" -e "/wxpython/d" \
          ${FSLDIR}/etc/fslconf/fslpython_environment.yml \
-      && bash /opt/fsl-6.0.3/etc/fslconf/fslpython_install.sh -f /opt/fsl-6.0.3 \
+      && bash /opt/fsl-6.0.5/etc/fslconf/fslpython_install.sh -f /opt/fsl-6.0.5 \
       && find ${FSLDIR}/fslpython/envs/fslpython/lib/python3.7/site-packages/ -type d -name "tests"  -print0 | xargs -0 rm -r \
       && ${FSLDIR}/fslpython/bin/conda clean --all
 
@@ -232,7 +233,7 @@ ENV C3DPATH="/opt/convert3d-nightly" \
     PATH="/opt/convert3d-nightly/bin:$PATH"
 RUN echo "Downloading Convert3D ..." \
     && mkdir -p /opt/convert3d-nightly \
-    && curl -fsSLk --retry 5 https://sourceforge.net/projects/c3d/files/c3d/Nightly/c3d-nightly-Linux-x86_64.tar.gz/download \
+    && curl -fsSL --retry 5 https://sourceforge.net/projects/c3d/files/c3d/Nightly/c3d-nightly-Linux-x86_64.tar.gz/download \
     | tar -xz -C /opt/convert3d-nightly --strip-components 1
 
 # Create a shared $HOME directory
@@ -269,7 +270,7 @@ RUN mkdir $CRN_SHARED_DATA && \
     /root/get_templates.sh && \
     chmod -R a+rX $CRN_SHARED_DATA
 
-RUN ln -s /opt/fsl-6.0.3/bin/eddy_cuda9.1 /opt/fsl-6.0.3/bin/eddy_cuda
+RUN ln -s /opt/fsl-6.0.5/bin/eddy_cuda9.1 /opt/fsl-6.0.5/bin/eddy_cuda
 
 # Installing ANTs latest from source
 ARG ANTS_SHA=e00e8164d7a92f048e5d06e388a15c1ee8e889c4
