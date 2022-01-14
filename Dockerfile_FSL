@@ -1,0 +1,66 @@
+FROM nvidia/cuda:10.2-runtime-ubuntu18.04
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+                    ca-certificates \
+                    curl
+
+  RUN echo "Downloading FSL ..." \
+      && mkdir -p /opt/fsl-6.0.5.1 \
+      && curl -fsSL --retry 5 https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5.1-centos7_64.tar.gz \
+      | tar -xz -C /opt/fsl-6.0.5.1 --strip-components 1 \
+      --exclude='fsl/doc' \
+      --exclude='fsl/data/atlases' \
+      --exclude='fsl/data/possum' \
+      --exclude='fsl/src' \
+      --exclude='fsl/extras/src' \
+      --exclude='fsl/bin/fslview*' \
+      --exclude='fsl/bin/FSLeyes' \
+      --exclude 'fsl/config' \
+      --exclude 'fsl/data/mist' \
+      --exclude 'fsl/data/standard/bianca' \
+      --exclude 'fsl/data/standard/tissuepriors' \
+      --exclude 'fsl/doc' \
+      --exclude 'fsl/etc/default_flobs.flobs' \
+      --exclude 'fsl/etc/fslconf' \
+      --exclude 'fsl/etc/js' \
+      --exclude 'fsl/etc/luts' \
+      --exclude 'fsl/etc/matlab' \
+      --exclude 'fsl/extras' \
+      --exclude 'fsl/include' \
+      --exclude 'fsl/python' \
+      --exclude 'fsl/refdoc' \
+      --exclude 'fsl/src' \
+      --exclude 'fsl/tcl'
+#     RUN find /opt/fsl-6.0.5.1/bin -type f -not \( \
+#             -name "aff2rigid" -or \
+#             -name "applywarp" -or \
+#             -name "avscale" -or \
+#             -name "bet" -or \
+#             -name "bet2" -or \
+#             -name "bedpost" -or \
+#             -name "concat_bvars" -or \
+#             -name "convert_xfm" -or \
+#             -name "convertwarp" -or \
+#             -name "dtifit" -or \
+#             -name 'eddy_*' -or \
+#             -name "fast" -or \
+#             -name "fdt_rotate_bvecs" -or \
+#             -name 'first*' -or \
+#             -name "flirt" -or \
+#             -name 'fnirt*' -or \
+#             -name "fslhd" -or \
+#             -name "fslinfo" -or \
+#             -name "fslmaths" -or \
+#             -name "fslmerge" -or \
+#             -name "fslroi" -or \
+#             -name "fslsplit" -or \
+#             -name "fslstats" -or \
+#             -name "imtest" -or \
+#             -name "mcflirt" -or \
+#             -name "prelude" -or \
+#             -name "remove_ext" -or \
+#             -name "topup" -or \
+#             -name "runfirst" -or \
+#             -name "select_dwi_vols" -or \
+#             -name "zeropad" \) -delete
