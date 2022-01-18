@@ -39,7 +39,7 @@ RUN mkdir /tmp/ants \
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_INSTALL_PREFIX=/opt/ants \
         /tmp/ants/source \
-    && cmake --build . --parallel 2 \
+    && cmake --build . --parallel \
     && cd ANTS-build \
     && cmake --install .
 

@@ -1,0 +1,55 @@
+FROM nvidia/cuda:10.2-runtime-ubuntu18.04
+
+RUN apt update && apt full-upgrade -y && \
+  apt install --no-install-recommends -y software-properties-common && \
+  add-apt-repository -y ppa:beineri/opt-qt-5.12.8-bionic && \
+  add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+  apt install -y --no-install-recommends \
+  unzip \
+  curl \
+  make \
+  git \
+  libboost-all-dev \
+  zlib1g-dev \
+  ca-certificates \
+  qt512base \
+  qt512charts-no-lgpl \
+  mesa-common-dev \
+  libglu1-mesa-dev \
+  gcc \
+  g++ && \
+  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+#Need to use a different shell so the QT ENV script works
+SHELL ["/bin/bash", "-c"]
+ENV PATH="$PATH:/opt/qt512/bin"
+
+ARG DSI_SHA=eb8433e8923d4bb26bd6ee04d0da4bdede55ed85
+ARG TIPL_SHA=f94d2df66acba0fa929351a0a2bdfaa40faf66e8
+RUN source /opt/qt512/bin/qt512-env.sh \
+  && mkdir /opt/dsi-studio \
+  && cd /opt/dsi-studio \
+  && curl -sSLO https://github.com/frankyeh/DSI-Studio/archive/${DSI_SHA}.zip \
+  && unzip ${DSI_SHA}.zip \
+  && mv DSI-Studio-${DSI_SHA} src \
+  && rm -rf ${DSI_SHA}.zip \
+  && curl -sSLO https://github.com/frankyeh/TIPL/archive/${TIPL_SHA}.zip \
+  && unzip ${TIPL_SHA}.zip \
+  && mv TIPL-${TIPL_SHA} src/tipl \
+  && rm ${TIPL_SHA}.zip \
+  && mkdir build && cd build \
+  && qmake ../src && make -j 1 \
+  && cd /opt/dsi-studio \
+  && curl -sSLO 'https://upenn.box.com/shared/static/01r73d4a15utl13himv4d7cjpa6etf6z.gz' \
+  && tar xvfz 01r73d4a15utl13himv4d7cjpa6etf6z.gz \
+  && rm 01r73d4a15utl13himv4d7cjpa6etf6z.gz \
+  && cd dsi_studio_64 \
+  && mv ../build/dsi_studio . \
+  && rm -rf /opt/dsi-studio/src /opt/dsi-studio/build
+
+RUN curl -sL https://github.com/probonopd/linuxdeployqt/releases/download/7/linuxdeployqt-7-x86_64.AppImage > linuxdeployqt \
+  && chmod a+x linuxdeployqt \
+  && ./linuxdeployqt --appimage-extract \
+  && ./squashfs-root/AppRun /opt/dsi-studio/dsi_studio_64/dsi_studio -unsupported-bundle-everything -no-translations -bundle-non-qt-libs \
+  && rm -fr squashfs-root \
+  && rm -fr linuxdeployqt
