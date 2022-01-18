@@ -12,6 +12,7 @@ RUN apt-get update && \
                     wget \
                     ninja-build \
                     git \
+                    g++ \
                     zlib1g-dev \
                     bc
 
