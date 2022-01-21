@@ -6,7 +6,7 @@ jobs:
       TZ: "/usr/share/zoneinfo/America/New_York"
       SCRATCH: "/scratch"
     docker:
-      - image: cimg/base:2022.01
+      - image: docker:20.10.12
     working_directory: /tmp/src/qsiprep_build
     steps:
       - checkout
