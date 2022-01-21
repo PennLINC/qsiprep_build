@@ -18,6 +18,7 @@ jobs:
           no_output_timeout: 5h
           command: |
               DOCKER_BUILDKIT=1 \
+              BUILDKIT_PROGRESS=plain \
               docker build \
                 --rm=false \
                 -t pennbbl/qsiprep_build:latest .

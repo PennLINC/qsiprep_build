@@ -53,6 +53,7 @@ RUN apt-get update -qq \
     # Keep only what we use \
     && find /opt/afni-latest -type f -not \( \
         -name "3drefit" -or \
+        -name "3dcalc" -or \
         -name "3dresample" -or \
         -name "3dAutobox" -or \
         -name "3dSkullStrip" -or \

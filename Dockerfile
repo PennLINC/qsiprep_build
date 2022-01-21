@@ -5,43 +5,69 @@ FROM cuda10
 
 ## FSL
 COPY --from=pennbbl/qsiprep-fsl:22.1.0 /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
-
+ENV FSLDIR="/opt/fsl-6.0.5.1" \
+    FSLOUTPUTTYPE="NIFTI_GZ" \
+    FSLMULTIFILEQUIT="TRUE" \
+    FSLLOCKDIR="" \
+    FSLMACHINELIST="" \
+    FSLREMOTECALL="" \
+    FSLGECUDAQ="cuda.q" \
+    LD_LIBRARY_PATH="/opt/fsl-6.0.5.1/lib:$LD_LIBRARY_PATH" \
+    PATH="/opt/fsl-6.0.5.1/bin:$PATH" \
+    FSL_DEPS="libquadmath0"
 
 ## ANTs
 COPY --from=pennbbl/qsiprep-ants:22.1.0 /opt/ants /opt/ants
-# - zlib1g-dev
+ENV ANTSPATH="/opt/ants/bin" \
+    LD_LIBRARY_PATH="/opt/ants/lib:$LD_LIBRARY_PATH" \
+    PATH="$PATH:/opt/ants/bin" \
+    ANTS_DEPS="zlib1g-dev"
 
 ## DSI Studio
 COPY --from=pennbbl/qsiprep-dsistudio:22.1.0 /opt/dsi-studio /opt/dsi-studio
-# - qt512base 
-# - qt512charts-no-lgpl
+ENV QT_BASE_DIR="/opt/qt512"
+ENV QTDIR="$QT_BASE_DIR" \
+    LD_LIBRARY_PATH="$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" \
+    PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
+    PATH="$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio/dsi_studio_64" \
+    DSI_STUDIO_DEPS="qt512base qt512charts-no-lgpl"
 
 ## MRtrix3
 COPY --from=pennbbl/qsiprep-mrtrix3:22.1.0 /opt/mrtrix3-latest /opt/mrtrix3-latest
 ## MRtrix3-3Tissue
 COPY --from=pennbbl/qsiprep-3tissue:22.1.0 /opt/3Tissue /opt/3Tissue
-# - bzip2
-# - ca-certificates
-# - curl
-# - libpng16-16
-# - libtiff5
+ENV MRTRIX3_DEPS="bzip2 ca-certificates curl libpng16-16 libtiff5"
 
 ## Freesurfer
 COPY --from=pennbbl/qsiprep-freesurfer:22.1.0 /opt/freesurfer /opt/freesurfer
-# - bc
-# - ca-certificates
-# - curl
-# - libgomp1
-# - libxmu6
-# - libxt6
-# - tcsh
-# - perl
+# Simulate SetUpFreeSurfer.sh
+ENV FSL_DIR="/opt/fsl-6.0.5.1" \
+    OS="Linux" \
+    FS_OVERRIDE=0 \
+    FIX_VERTEX_AREA="" \
+    FSF_OUTPUT_FORMAT="nii.gz" \
+    FREESURFER_HOME="/opt/freesurfer"
+ENV SUBJECTS_DIR="$FREESURFER_HOME/subjects" \
+    FUNCTIONALS_DIR="$FREESURFER_HOME/sessions" \
+    MNI_DIR="$FREESURFER_HOME/mni" \
+    LOCAL_DIR="$FREESURFER_HOME/local" \
+    MINC_BIN_DIR="$FREESURFER_HOME/mni/bin" \
+    MINC_LIB_DIR="$FREESURFER_HOME/mni/lib" \
+    MNI_DATAPATH="$FREESURFER_HOME/mni/data"
+ENV PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5" \
+    MNI_PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5" \
+    PATH="$FREESURFER_HOME/bin:$FSFAST_HOME/bin:$FREESURFER_HOME/tktools:$MINC_BIN_DIR:$PATH" \
+    FREESURFER_DEPS="bc ca-certificates curl libgomp1 libxmu6 libxt6 tcsh perl"
 
 ## AFNI
 COPY --from=pennbbl/qsiprep-afni:22.1.0 /opt/afni-latest /opt/afni-latest
+ENV PATH="$PATH:/opt/afni-latest" \
+    AFNI_INSTALLDIR=/opt/afni-latest \
+    AFNI_IMSAVE_WARNINGS=NO
 
 ## Python, compiled dependencies
 COPY --from=pennbbl/qsiprep-miniconda:22.1.0 /usr/local/miniconda /usr/local/miniconda
+ENV PATH="/usr/local/miniconda/bin:$PATH"
 
 RUN apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
@@ -93,7 +119,12 @@ RUN apt-get update -qq \
 RUN echo "Downloading Convert3D ..." \
     && mkdir -p /opt/convert3d-nightly \
     && curl -fsSL --retry 5 https://sourceforge.net/projects/c3d/files/c3d/Nightly/c3d-nightly-Linux-x86_64.tar.gz/download \
-    | tar -xz -C /opt/convert3d-nightly --strip-components 1
+    | tar -xz -C /opt/convert3d-nightly --strip-components 1 \
+    --exclude "c3d-1.0.0-Linux-x86_64/lib" \
+    --exclude "c3d-1.0.0-Linux-x86_64/share" \
+    --exclude "c3d-1.0.0-Linux-x86_64/bin/c3d_gui"
+ENV C3DPATH="/opt/convert3d-nightly" \
+    PATH="/opt/convert3d-nightly/bin:$PATH"
 
 # Prepare environment
 RUN apt-get update && \
@@ -116,7 +147,7 @@ RUN curl -o pandoc-2.2.2.1-1-amd64.deb -sSL "https://github.com/jgm/pandoc/relea
 RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
     && apt-get update \
     && apt install -y --no-install-recommends \
-    qt512base qt512charts-no-lgpl \
+    ${DSI_STUDIO_DEPS} \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Create a shared $HOME directory
@@ -132,44 +163,8 @@ ENV \
     MRTRIX_NTHREADS=1 \
     KMP_WARNINGS=0 \
     CRN_SHARED_DATA=/niworkflows_data \
-    ANTSPATH="/opt/ants/bin" \
-    AFNI_INSTALLDIR=/opt-afni-latest \
-    AFNI_IMSAVE_WARNINGS=NO \
-    FSLOUTPUTTYPE=NIFTI_GZ \
-    MRTRIX_NTHREADS=1 \
     IS_DOCKER_8395080871=1 \
-    DIPY_HOME=/home/qsiprep/.dipy \
-    \
-    FREESURFER_HOME=/opt/freesurfer \
-    SUBJECTS_DIR=/opt/freesurfer/subjects \
-    FUNCTIONALS_DIR=/opt/freesurfer/sessions \
-    MNI_DIR=/opt/freesurfer/mni \
-    LOCAL_DIR=/opt/freesurfer/local \
-    FSFAST_HOME=/opt/freesurfer/fsfast \
-    MINC_BIN_DIR=/opt/freesurfer/mni/bin \
-    MINC_LIB_DIR=/opt/freesurfer/mni/lib \
-    MNI_DATAPATH=/opt/freesurfer/mni/data \
-    FMRI_ANALYSIS_DIR=/opt/freesurfer/fsfast \
-    PERL5LIB=$MINC_LIB_DIR/perl5/5.8.5 \
-    MNI_PERL5LIB=$MINC_LIB_DIR/perl5/5.8.5 \
-    \
-    QT_BASE_DIR="/opt/qt512" \
-    QTDIR="$QT_BASE_DIR" \
-    PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
-    \
-    \
-    FSLDIR="/opt/fsl-6.0.5.1" \
-    PATH="/opt/fsl-6.0.5.1/bin:$PATH" \
-    FSLOUTPUTTYPE="NIFTI_GZ" \
-    FSLMULTIFILEQUIT="TRUE" \
-    FSLLOCKDIR="" \
-    FSLMACHINELIST="" \
-    FSLREMOTECALL="" \
-    FSLGECUDAQ="cuda.q" \
-    LD_LIBRARY_PATH="/opt/fsl-6.0.5.1/lib:$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:/opt/ants/lib:$LD_LIBRARY_PATH" \
-    \
-    C3DPATH="/opt/convert3d-nightly" \
-    PATH="/opt/fsl-6.0.5.1/bin:/usr/local/miniconda/bin:$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio/dsi_studio_64:$FREESURFER_HOME/bin:$FSFAST_HOME/bin:$FREESURFER_HOME/tktools:$MINC_BIN_DIR:/opt/afni-latest:/opt/ants/bin:/opt/convert3d-nightly/bin"
+    DIPY_HOME=/home/qsiprep/.dipy
 
 WORKDIR /root/
 
