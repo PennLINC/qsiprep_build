@@ -36,7 +36,9 @@ ENV QTDIR="$QT_BASE_DIR" \
 COPY --from=pennbbl/qsiprep-mrtrix3:22.1.0 /opt/mrtrix3-latest /opt/mrtrix3-latest
 ## MRtrix3-3Tissue
 COPY --from=pennbbl/qsiprep-3tissue:22.1.0 /opt/3Tissue /opt/3Tissue
-ENV MRTRIX3_DEPS="bzip2 ca-certificates curl libpng16-16 libtiff5"
+ENV PATH="$PATH:/opt/mrtrix3-latest/bin:/opt/3Tissue/bin" \
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/mrtrix3-latest/lib:/opt/3Tissue/lib" \
+    MRTRIX3_DEPS="bzip2 ca-certificates curl libpng16-16 libtiff5"
 
 ## Freesurfer
 COPY --from=pennbbl/qsiprep-freesurfer:22.1.0 /opt/freesurfer /opt/freesurfer
