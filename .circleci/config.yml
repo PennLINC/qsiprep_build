@@ -16,6 +16,7 @@ jobs:
           name: Build Docker image
           no_output_timeout: 5h
           command: |
+              DOCKER_BUILDKIT=1 \
               docker build \
                 --rm=false \
                 -t pennbbl/qsiprep_build:latest .

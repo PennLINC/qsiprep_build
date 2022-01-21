@@ -1,0 +1,64 @@
+# Copied from: fMRIPrep Docker Container Image distribution
+#
+# MIT License
+#
+# Copyright (c) 2021 The NiPreps Developers
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+FROM nvidia/cuda:10.2-runtime-ubuntu18.04
+
+# AFNI latest (neurodocker build)
+RUN apt-get update -qq \
+    && apt-get install -y -q --no-install-recommends \
+           apt-utils \
+           ed \
+           gsl-bin \
+           curl \
+           libglib2.0-0 \
+           libglu1-mesa-dev \
+           libglw1-mesa \
+           libgomp1 \
+           libjpeg62 \
+           libxm4 \
+           netpbm \
+           tcsh \
+           xfonts-base \
+           xvfb \
+    && echo "Downloading AFNI ..." \
+    && mkdir -p /opt/afni-latest \
+    && curl -fsSL --retry 5 https://afni.nimh.nih.gov/pub/dist/tgz/linux_openmp_64.tgz \
+    | tar -xz -C /opt/afni-latest --strip-components 1 \
+    --exclude "linux_openmp_64/*.gz" \
+    --exclude "linux_openmp_64/funstuff" \
+    --exclude "linux_openmp_64/shiny" \
+    --exclude "linux_openmp_64/afnipy" \
+    --exclude "linux_openmp_64/lib/RetroTS" \
+    --exclude "linux_openmp_64/meica.libs" \
+    # Keep only what we use \
+    && find /opt/afni-latest -type f -not \( \
+        -name "3drefit" -or \
+        -name "3dresample" -or \
+        -name "3dAutobox" -or \
+        -name "3dSkullStrip" -or \
+        -name "3dAutomask" -or \
+        -name "3dWarp" -or \
+        -name "3dTcat" -or \
+        -name "3dTstat" -or \
+        -name "3dQWarp" -or \
+        -name "3dvolreg" \) -delete

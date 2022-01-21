@@ -34,5 +34,15 @@ docker build \
 docker push pennbbl/qsiprep-freesurfer:${TAG}
 
 docker build \
+    -t pennbbl/qsiprep-afni:${TAG} \
+    -f Dockerfile_AFNI .
+docker push pennbbl/qsiprep-afni:${TAG}
+
+docker build \
+    -t pennbbl/qsiprep-miniconda:${TAG} \
+    -f Dockerfile_Miniconda .
+docker push pennbbl/qsiprep-miniconda:${TAG}
+
+docker build \
     -t pennbbl/qsiprep_build:${TAG} \
     -f Dockerfile_multi .
