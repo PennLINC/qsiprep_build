@@ -6,6 +6,7 @@ FROM cuda10
 ## FSL
 COPY --from=pennbbl/qsiprep-fsl:22.1.0 /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
 
+
 ## ANTs
 COPY --from=pennbbl/qsiprep-ants:22.1.0 /opt/ants /opt/ants
 # - zlib1g-dev
@@ -57,12 +58,14 @@ RUN apt-get update -qq \
            libgomp1 \
            libjpeg62 \
            libpng16-16 \
+           libquadmath0 \
            libxm4 \
            libxmu6 \
            libxt6 \
            perl \
            libtiff5 \
            netpbm \
+           software-properties-common \
            tcsh \
            xfonts-base \
            xvfb \
@@ -87,8 +90,6 @@ RUN apt-get update -qq \
     fi \
     && ldconfig
 
-ENV C3DPATH="/opt/convert3d-nightly" \
-    PATH="/opt/convert3d-nightly/bin:$PATH"
 RUN echo "Downloading Convert3D ..." \
     && mkdir -p /opt/convert3d-nightly \
     && curl -fsSL --retry 5 https://sourceforge.net/projects/c3d/files/c3d/Nightly/c3d-nightly-Linux-x86_64.tar.gz/download \
@@ -132,7 +133,6 @@ ENV \
     KMP_WARNINGS=0 \
     CRN_SHARED_DATA=/niworkflows_data \
     ANTSPATH="/opt/ants/bin" \
-    LD_LIBRARY_PATH="/opt/ants/lib:$LD_LIBRARY_PATH" \
     AFNI_INSTALLDIR=/opt-afni-latest \
     AFNI_IMSAVE_WARNINGS=NO \
     FSLOUTPUTTYPE=NIFTI_GZ \
@@ -155,11 +155,21 @@ ENV \
     \
     QT_BASE_DIR="/opt/qt512" \
     QTDIR="$QT_BASE_DIR" \
-    PATH="$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio/dsi_studio_64" \
-    LD_LIBRARY_PATH="$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" \
     PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
     \
-    PATH="/usr/local/miniconda/bin:${PATH}:$FREESURFER_HOME/bin:$FSFAST_HOME/bin:$FREESURFER_HOME/tktools:$MINC_BIN_DIR:/opt/afni:/opt/ants/bin"
+    \
+    FSLDIR="/opt/fsl-6.0.5.1" \
+    PATH="/opt/fsl-6.0.5.1/bin:$PATH" \
+    FSLOUTPUTTYPE="NIFTI_GZ" \
+    FSLMULTIFILEQUIT="TRUE" \
+    FSLLOCKDIR="" \
+    FSLMACHINELIST="" \
+    FSLREMOTECALL="" \
+    FSLGECUDAQ="cuda.q" \
+    LD_LIBRARY_PATH="/opt/fsl-6.0.5.1/lib:$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:/opt/ants/lib:$LD_LIBRARY_PATH" \
+    \
+    C3DPATH="/opt/convert3d-nightly" \
+    PATH="/opt/fsl-6.0.5.1/bin:/usr/local/miniconda/bin:$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio/dsi_studio_64:$FREESURFER_HOME/bin:$FSFAST_HOME/bin:$FREESURFER_HOME/tktools:$MINC_BIN_DIR:/opt/afni-latest:/opt/ants/bin:/opt/convert3d-nightly/bin"
 
 WORKDIR /root/
 
@@ -169,7 +179,7 @@ RUN mkdir $CRN_SHARED_DATA && \
     /root/get_templates.sh && \
     chmod -R a+rX $CRN_SHARED_DATA
 
-RUN ln -s /opt/fsl-6.0.5/bin/eddy_cuda10.2 /opt/fsl-6.0.5/bin/eddy_cuda
+RUN ln -s /opt/fsl-6.0.5.1/bin/eddy_cuda10.2 /opt/fsl-6.0.5.1/bin/eddy_cuda
 
 # Make singularity mount directories
 RUN  mkdir -p /sngl/data \
