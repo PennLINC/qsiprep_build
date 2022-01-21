@@ -69,6 +69,7 @@ ENV PATH="$PATH:/opt/afni-latest" \
 
 ## Python, compiled dependencies
 COPY --from=pennbbl/qsiprep-miniconda:22.1.0 /usr/local/miniconda /usr/local/miniconda
+COPY --from=pennbbl/qsiprep-miniconda:22.1.0 /home/qsiprep/.dipy /home/qsiprep/.dipy
 ENV PATH="/usr/local/miniconda/bin:$PATH"
 
 RUN apt-get update -qq \
