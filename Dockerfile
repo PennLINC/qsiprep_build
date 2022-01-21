@@ -40,7 +40,7 @@ COPY --from=pennbbl/qsiprep-freesurfer:22.1.0 /opt/freesurfer /opt/freesurfer
 COPY --from=pennbbl/qsiprep-afni:22.1.0 /opt/afni-latest /opt/afni-latest
 
 ## Python, compiled dependencies
-COPY --from=pennbbl/qsiprep:miniconda:22.1.0 /usr/local/miniconda /usr/local/miniconda
+COPY --from=pennbbl/qsiprep-miniconda:22.1.0 /usr/local/miniconda /usr/local/miniconda
 
 RUN apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
