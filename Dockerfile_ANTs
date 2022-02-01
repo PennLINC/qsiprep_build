@@ -41,7 +41,47 @@ RUN mkdir /tmp/ants \
         /tmp/ants/source \
     && cmake --build . --parallel \
     && cd ANTS-build \
-    && cmake --install .
+    && cmake --install . \
+    && cd /opt/ants/bin \
+    && rm \
+        ANTSUseLandmarkImagesToGetAffineTransform \
+        ANTSUseLandmarkImagesToGetBSplineDisplacementField \
+        ClusterImageStatistics \
+        ConvertInputImagePixelTypeToFloat \
+        ConvertScalarImageToRGB \
+        ConvertToJpg \
+        CreateDTICohort \
+        DeNrrd \
+        ExtractSliceFromImage \
+        FitBSplineToPoints \
+        KellyKapowski \
+        KellySlater \
+        NonLocalSuperResolution \
+        SuperResolution \
+        SurfaceBasedSmoothing \
+        TimeSCCAN \
+        WarpImageMultiTransform \
+        WarpTensorImageMultiTransform \
+        WarpTimeSeriesImageMultiTransform \
+        antsASLProcessing.sh \
+        antsBOLDNetworkAnalysis.R \
+        antsCorticalThickness.sh \
+        antsIntermodalityIntrasubject.sh \
+        antsLandmarkBasedTransformInitializer \
+        antsLongitudinalCorticalThickness.sh \
+        antsMotionCorr \
+        antsMotionCorrDiffusionDirection \
+        antsMotionCorrStats \
+        antsNetworkAnalysis.R \
+        antsNeuroimagingBattery \
+        antsSliceRegularizedRegistration \
+        antsUtilitiesTesting \
+        sccan \
+        simpleSynRegistration \
+        waitForPBSQJobs.pl \
+        waitForSGEQJobs.pl \
+        waitForSlurmJobs.pl \
+        waitForXGridJobs.pl
 
 FROM base
 COPY --from=builder /opt/ants /opt/ants

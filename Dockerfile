@@ -37,7 +37,6 @@ COPY --from=pennbbl/qsiprep-mrtrix3:22.1.0 /opt/mrtrix3-latest /opt/mrtrix3-late
 ## MRtrix3-3Tissue
 COPY --from=pennbbl/qsiprep-3tissue:22.1.0 /opt/3Tissue /opt/3Tissue
 ENV PATH="$PATH:/opt/mrtrix3-latest/bin:/opt/3Tissue/bin" \
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/mrtrix3-latest/lib:/opt/3Tissue/lib" \
     MRTRIX3_DEPS="bzip2 ca-certificates curl libpng16-16 libtiff5"
 
 ## Freesurfer
@@ -132,7 +131,7 @@ ENV C3DPATH="/opt/convert3d-nightly" \
 # Prepare environment
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        zlib1g-dev && \
+        zlib1g-dev graphviz libfftw3-3 && \
     curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
     apt-get install -y --no-install-recommends \
       nodejs && \
@@ -150,8 +149,13 @@ RUN curl -o pandoc-2.2.2.1-1-amd64.deb -sSL "https://github.com/jgm/pandoc/relea
 RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
     && apt-get update \
     && apt install -y --no-install-recommends \
-    ${DSI_STUDIO_DEPS} \
+    ${DSI_STUDIO_DEPS} wget \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Get fsl_sub
+RUN cd ${FSLDIR}/bin \
+    && wget https://raw.githubusercontent.com/neurolabusc/fsl_sub/master/fsl_sub \
+    && chmod a+rx fsl_sub
 
 # Create a shared $HOME directory
 RUN useradd -m -s /bin/bash -G users qsiprep
@@ -178,6 +182,15 @@ RUN mkdir $CRN_SHARED_DATA && \
     chmod -R a+rX $CRN_SHARED_DATA
 
 RUN ln -s /opt/fsl-6.0.5.1/bin/eddy_cuda10.2 /opt/fsl-6.0.5.1/bin/eddy_cuda
+
+# Download the atlases
+ENV QSIRECON_ATLAS /atlas/qsirecon_atlases
+RUN bash -c \
+    'mkdir /atlas \
+    && cd  /atlas \
+    && wget -nv https://upenn.box.com/shared/static/8k17yt2rfeqm3emzol5sa0j9fh3dhs0i.xz \
+    && tar xvfJm 8k17yt2rfeqm3emzol5sa0j9fh3dhs0i.xz \
+    && rm 8k17yt2rfeqm3emzol5sa0j9fh3dhs0i.xz'
 
 # Make singularity mount directories
 RUN  mkdir -p /sngl/data \

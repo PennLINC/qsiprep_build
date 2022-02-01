@@ -20,7 +20,8 @@ RUN curl -sSLO https://repo.anaconda.com/miniconda/Miniconda3-py38_4.10.3-Linux-
     rm Miniconda3-py38_4.10.3-Linux-x86_64.sh
 
 RUN /usr/local/miniconda/bin/conda install -y numpy scipy \
-    && /usr/local/miniconda/bin/pip install python-spams dmri-amico \
-    && RUN mkdir -p ${HOME}/.dipy \
-    /usr/local/miniconda/bin/python -c "import amico; amico.core.setup()"
+    && /usr/local/miniconda/bin/pip install python-spams dmri-amico
+
+RUN mkdir -p ${HOME}/.dipy \
+    && /usr/local/miniconda/bin/python -c "import amico; amico.core.setup()"
 

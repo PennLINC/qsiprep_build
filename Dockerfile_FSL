@@ -2,65 +2,263 @@ FROM nvidia/cuda:10.2-runtime-ubuntu18.04
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-                    ca-certificates \
-                    curl
+    ca-certificates \
+    curl \
+    bc \
+    ca-certificates \
+    curl \
+    dc \
+    file \
+    libfontconfig1 \
+    libfreetype6 \
+    libgl1-mesa-dev \
+    libgl1-mesa-dri \
+    libglu1-mesa-dev \
+    libgomp1 \
+    libice6 \
+    libopenblas-base \
+    libxcursor1 \
+    libxft2 \
+    libxinerama1 \
+    libxrandr2 \
+    libxrender1 \
+    libxt6 \
+    sudo \
+    wget
 
-  RUN echo "Downloading FSL ..." \
+RUN echo "Downloading FSL ..." \
       && mkdir -p /opt/fsl-6.0.5.1 \
       && curl -fsSL --retry 5 https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5.1-centos7_64.tar.gz \
       | tar -xz -C /opt/fsl-6.0.5.1 --strip-components 1 \
       --exclude='fsl/doc' \
-      --exclude='fsl/data/atlases' \
       --exclude='fsl/data/possum' \
       --exclude='fsl/src' \
-      --exclude='fsl/extras/src' \
       --exclude='fsl/bin/fslview*' \
       --exclude='fsl/bin/FSLeyes' \
-      --exclude 'fsl/config' \
-      --exclude 'fsl/data/mist' \
       --exclude 'fsl/data/standard/bianca' \
-      --exclude 'fsl/data/standard/tissuepriors' \
       --exclude 'fsl/doc' \
       --exclude 'fsl/etc/default_flobs.flobs' \
-      --exclude 'fsl/etc/fslconf' \
-      --exclude 'fsl/etc/js' \
-      --exclude 'fsl/etc/luts' \
-      --exclude 'fsl/etc/matlab' \
-      --exclude 'fsl/extras' \
-      --exclude 'fsl/include' \
-      --exclude 'fsl/python' \
       --exclude 'fsl/refdoc' \
-      --exclude 'fsl/src' \
-      --exclude 'fsl/tcl'
-#     RUN find /opt/fsl-6.0.5.1/bin -type f -not \( \
-#             -name "aff2rigid" -or \
-#             -name "applywarp" -or \
-#             -name "avscale" -or \
-#             -name "bet" -or \
-#             -name "bet2" -or \
-#             -name "bedpost" -or \
-#             -name "concat_bvars" -or \
-#             -name "convert_xfm" -or \
-#             -name "convertwarp" -or \
-#             -name "dtifit" -or \
-#             -name 'eddy_*' -or \
-#             -name "fast" -or \
-#             -name "fdt_rotate_bvecs" -or \
-#             -name 'first*' -or \
-#             -name "flirt" -or \
-#             -name 'fnirt*' -or \
-#             -name "fslhd" -or \
-#             -name "fslinfo" -or \
-#             -name "fslmaths" -or \
-#             -name "fslmerge" -or \
-#             -name "fslroi" -or \
-#             -name "fslsplit" -or \
-#             -name "fslstats" -or \
-#             -name "imtest" -or \
-#             -name "mcflirt" -or \
-#             -name "prelude" -or \
-#             -name "remove_ext" -or \
-#             -name "topup" -or \
-#             -name "runfirst" -or \
-#             -name "select_dwi_vols" -or \
-#             -name "zeropad" \) -delete
+      --exclude 'fsl/tcl' \
+    && cd /opt/fsl-6.0.5.1/bin \
+    && rm \
+        AnatomicalAverage \
+        ApplyXFM \
+        Bet \
+        ConcatXFM \
+        Fast \
+        Fdt \
+        Feat \
+        Featquery \
+        Flirt \
+        Fsl_prepare_fieldmap \
+        Glm \
+        InvertXFM \
+        Make_flobs \
+        Melodic \
+        Nudge \
+        Pnm \
+        Possum \
+        Renderhighres \
+        Renderstats \
+        Runtcl \
+        Susan \
+        Text2Vest \
+        Vest2Text \
+        asl_calib \
+        asl_file \
+        asl_gui \
+        asl_mfree \
+        asl_reg \
+        atlasquery \
+        autoaq \
+        avw2fsl \
+        b0calc \
+        basil \
+        basil_var \
+        baycest \
+        bianca \
+        bianca_cluster_stats \
+        bianca_overlap_measures \
+        bianca_perivent_deep \
+        calc_grad_perc_dev \
+        ccops \
+        checkFEAT \
+        cluster \
+        cluster2html \
+        connectedcomp \
+        contrast_mgr \
+        create_blueprint.py \
+        cutoffcalc \
+        design_ttest2 \
+        distancemap \
+        drawmesh \
+        dual_regression \
+        easythresh \
+        estimate_metric_distortion \
+        estnoise \
+        fabber \
+        fabber_asl \
+        fabber_cest \
+        fabber_dce \
+        fabber_dsc \
+        fabber_dualecho \
+        fabber_dwi \
+        fabber_pet \
+        fabber_qbold \
+        fabber_t1 \
+        fabber_var \
+        fdr \
+        feat \
+        feat_gm_prepare \
+        feat_model \
+        featquery \
+        featregapply \
+        film_cifti \
+        film_gls \
+        filmbabe \
+        filmbabescript \
+        flameo \
+        fsl2ascii \
+        fsl_anat \
+        fsl_boxplot \
+        fsl_deface \
+        fsl_gen_3D \
+        fsl_glm \
+        fsl_gui \
+        fsl_histogram \
+        fsl_motion_outliers \
+        fsl_mvlm \
+        fsl_reg \
+        fsl_regfilt \
+        fsl_sbca \
+        fsl_schurprod \
+        fsladd \
+        fslanimate \
+        fslascii2img \
+        fslcc \
+        fslcomplex \
+        fslcreatehd \
+        fslecho \
+        fslerrorreport \
+        fslinterleave \
+        fslsmoothfill \
+        fslsurfacemaths \
+        fsltclsh \
+        fslval \
+        fslvbm_1_bet \
+        fslvbm_2_template \
+        fslvbm_3_proc \
+        fslwish \
+        ftoz \
+        fugue \
+        generateConfounds \
+        generate_b0 \
+        generate_b0calc \
+        generate_brain \
+        hist2prob \
+        label2surf \
+        lesion_filling \
+        mainfeatreg \
+        make_bianca_mask \
+        match_smoothing \
+        mccutup \
+        melodic \
+        merge_parts_gpu \
+        midtrans \
+        mist \
+        mist_1_train \
+        mist_2_fit \
+        mist_FA_reg \
+        mist_display \
+        mist_mesh_utils \
+        mm \
+        morph_kernel \
+        mp_diffpow.sh \
+        msm \
+        msm_metric_sim \
+        msmapplywarp \
+        msmresample \
+        mvntool \
+        new_invwarp \
+        old_betall \
+        overlay \
+        oxford_asl \
+        oxford_asl_roi_stats.py \
+        perfusion_subtract \
+        pnm_evs \
+        pnm_stage1 \
+        pointflirt \
+        popp \
+        possum \
+        possumX \
+        possumX_postproc.sh \
+        possum_interpmot.py \
+        possum_matrix \
+        possum_plot.py \
+        possum_sum \
+        prelude \
+        prewhiten \
+        proj_thresh \
+        ptoz \
+        pulse \
+        quasil \
+        randomise \
+        randomise_parallel \
+        renderhighres \
+        rmsdiff \
+        run_mesh_utils \
+        selfintersection \
+        setFEAT \
+        siena \
+        siena_cal \
+        siena_diff \
+        siena_flirt \
+        siena_flow2std \
+        sienax \
+        sigloss \
+        signal2image \
+        sliceanimate \
+        slicer \
+        slices \
+        slices_summary \
+        slicesdir \
+        slicesmask \
+        slicetimer \
+        smoothest \
+        split_parts_gpu \
+        standard_space_roi \
+        std2imgcoord \
+        surf2surf \
+        surf2volume \
+        surf_proj \
+        surface_fdr \
+        surfconvert \
+        surfmaths \
+        susan \
+        swap_subjectwise \
+        swap_voxelwise \
+        swe \
+        systemnoise \
+        tmpnam \
+        toast \
+        tsplot \
+        ttologp \
+        ttoz \
+        unconfound \
+        updatefeatreg \
+        verbena \
+        viena_createpng \
+        viena_quant \
+        whirlgif \
+        xtract \
+        xtract_blueprint \
+        xtract_stats \
+        xtract_viewer \
+        ztop \
+    && cd /opt/fsl-6.0.5.1 \
+    && rm -rf \
+           extras \
+           python \
+           data/xtract_data
+    
