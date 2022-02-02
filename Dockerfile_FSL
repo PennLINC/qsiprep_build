@@ -39,8 +39,8 @@ RUN echo "Downloading FSL ..." \
       --exclude 'fsl/doc' \
       --exclude 'fsl/etc/default_flobs.flobs' \
       --exclude 'fsl/refdoc' \
-      --exclude 'fsl/tcl' \
-    && cd /opt/fsl-6.0.5.1/bin \
+      --exclude 'fsl/tcl'
+RUN cd /opt/fsl-6.0.5.1/bin \
     && rm \
         AnatomicalAverage \
         ApplyXFM \
@@ -139,7 +139,6 @@ RUN echo "Downloading FSL ..." \
         fslcc \
         fslcomplex \
         fslcreatehd \
-        fslecho \
         fslerrorreport \
         fslinterleave \
         fslsmoothfill \
@@ -227,7 +226,6 @@ RUN echo "Downloading FSL ..." \
         slicetimer \
         smoothest \
         split_parts_gpu \
-        standard_space_roi \
         std2imgcoord \
         surf2surf \
         surf2volume \
@@ -258,7 +256,7 @@ RUN echo "Downloading FSL ..." \
         ztop \
     && cd /opt/fsl-6.0.5.1 \
     && rm -rf \
-           extras \
-           python \
-           data/xtract_data
+        extras \
+        python \
+        data/xtract_data
     
