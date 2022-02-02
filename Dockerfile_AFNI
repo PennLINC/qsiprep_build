@@ -61,5 +61,5 @@ RUN apt-get update -qq \
         -name "3dWarp" -or \
         -name "3dTcat" -or \
         -name "3dTstat" -or \
-        -name "3dQWarp" -or \
+        -name "3dQwarp" -or \
         -name "3dvolreg" \) -delete

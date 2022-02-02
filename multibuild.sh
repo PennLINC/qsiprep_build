@@ -1,7 +1,7 @@
 #!/bin/bash
 export DOCKER_BUILDKIT=1
 
-TAG=22.1.0
+TAG=22.2.0
 docker build \
     -t pennbbl/qsiprep-ants:${TAG} \
     -f Dockerfile_ANTs .

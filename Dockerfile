@@ -4,7 +4,7 @@ FROM nvidia/cuda:10.2-runtime-ubuntu18.04 as cuda10
 FROM cuda10
 
 ## FSL
-COPY --from=pennbbl/qsiprep-fsl:22.1.0 /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
+COPY --from=pennbbl/qsiprep-fsl:22.2.0 /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
 ENV FSLDIR="/opt/fsl-6.0.5.1" \
     FSLOUTPUTTYPE="NIFTI_GZ" \
     FSLMULTIFILEQUIT="TRUE" \
@@ -61,7 +61,7 @@ ENV PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5" \
     FREESURFER_DEPS="bc ca-certificates curl libgomp1 libxmu6 libxt6 tcsh perl"
 
 ## AFNI
-COPY --from=pennbbl/qsiprep-afni:22.1.0 /opt/afni-latest /opt/afni-latest
+COPY --from=pennbbl/qsiprep-afni:22.2.0 /opt/afni-latest /opt/afni-latest
 ENV PATH="$PATH:/opt/afni-latest" \
     AFNI_INSTALLDIR=/opt/afni-latest \
     AFNI_IMSAVE_WARNINGS=NO
@@ -109,14 +109,15 @@ RUN apt-get update -qq \
     && curl -sSL --retry 5 -o /tmp/libpng.deb http://snapshot.debian.org/archive/debian-security/20160113T213056Z/pool/updates/main/libp/libpng/libpng12-0_1.2.49-1%2Bdeb7u2_amd64.deb \
     && dpkg -i /tmp/libpng.deb \
     && rm /tmp/libpng.deb \
-    && apt-get install -f \
+    && apt-get install -f --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && gsl2_path="$(find / -name 'libgsl.so.19' || printf '')" \
     && if [ -n "$gsl2_path" ]; then \
          ln -sfv "$gsl2_path" "$(dirname $gsl2_path)/libgsl.so.0"; \
     fi \
-    && ldconfig
+    && ldconfig \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN echo "Downloading Convert3D ..." \
     && mkdir -p /opt/convert3d-nightly \
@@ -152,10 +153,6 @@ RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
     ${DSI_STUDIO_DEPS} wget \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Get fsl_sub
-RUN cd ${FSLDIR}/bin \
-    && wget https://raw.githubusercontent.com/neurolabusc/fsl_sub/master/fsl_sub \
-    && chmod a+rx fsl_sub
 
 # Create a shared $HOME directory
 RUN useradd -m -s /bin/bash -G users qsiprep
