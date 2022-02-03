@@ -3,8 +3,18 @@ FROM nvidia/cuda:10.2-runtime-ubuntu18.04 as cuda10
 
 FROM cuda10
 
+ARG TAG_FSL
+ARG TAG_FREESURFER
+ARG TAG_ANTS
+ARG TAG_MRTRIX3
+ARG TAG_3TISSUE
+ARG TAG_DSISTUDIO
+ARG TAG_MINICONDA
+ARG TAG_AFNI
+
+
 ## FSL
-COPY --from=pennbbl/qsiprep-fsl:22.2.0 /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
+COPY --from=pennbbl/qsiprep-fsl:${TAG_FSL} /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
 ENV FSLDIR="/opt/fsl-6.0.5.1" \
     FSLOUTPUTTYPE="NIFTI_GZ" \
     FSLMULTIFILEQUIT="TRUE" \
@@ -17,14 +27,14 @@ ENV FSLDIR="/opt/fsl-6.0.5.1" \
     FSL_DEPS="libquadmath0"
 
 ## ANTs
-COPY --from=pennbbl/qsiprep-ants:22.1.0 /opt/ants /opt/ants
+COPY --from=pennbbl/qsiprep-ants:${TAG_ANTS} /opt/ants /opt/ants
 ENV ANTSPATH="/opt/ants/bin" \
     LD_LIBRARY_PATH="/opt/ants/lib:$LD_LIBRARY_PATH" \
     PATH="$PATH:/opt/ants/bin" \
     ANTS_DEPS="zlib1g-dev"
 
 ## DSI Studio
-COPY --from=pennbbl/qsiprep-dsistudio:22.1.0 /opt/dsi-studio /opt/dsi-studio
+COPY --from=pennbbl/qsiprep-dsistudio:${TAG_DSISTUDIO} /opt/dsi-studio /opt/dsi-studio
 ENV QT_BASE_DIR="/opt/qt512"
 ENV QTDIR="$QT_BASE_DIR" \
     LD_LIBRARY_PATH="$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" \
@@ -33,14 +43,14 @@ ENV QTDIR="$QT_BASE_DIR" \
     DSI_STUDIO_DEPS="qt512base qt512charts-no-lgpl"
 
 ## MRtrix3
-COPY --from=pennbbl/qsiprep-mrtrix3:22.1.0 /opt/mrtrix3-latest /opt/mrtrix3-latest
+COPY --from=pennbbl/qsiprep-mrtrix3:${TAG_MRTRIX3} /opt/mrtrix3-latest /opt/mrtrix3-latest
 ## MRtrix3-3Tissue
-COPY --from=pennbbl/qsiprep-3tissue:22.1.0 /opt/3Tissue /opt/3Tissue
+COPY --from=pennbbl/qsiprep-3tissue:${TAG_3TISSUE} /opt/3Tissue /opt/3Tissue
 ENV PATH="$PATH:/opt/mrtrix3-latest/bin:/opt/3Tissue/bin" \
     MRTRIX3_DEPS="bzip2 ca-certificates curl libpng16-16 libtiff5"
 
 ## Freesurfer
-COPY --from=pennbbl/qsiprep-freesurfer:22.1.0 /opt/freesurfer /opt/freesurfer
+COPY --from=pennbbl/qsiprep-freesurfer:${TAG_FREESURFER} /opt/freesurfer /opt/freesurfer
 # Simulate SetUpFreeSurfer.sh
 ENV FSL_DIR="/opt/fsl-6.0.5.1" \
     OS="Linux" \
@@ -61,14 +71,14 @@ ENV PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5" \
     FREESURFER_DEPS="bc ca-certificates curl libgomp1 libxmu6 libxt6 tcsh perl"
 
 ## AFNI
-COPY --from=pennbbl/qsiprep-afni:22.2.0 /opt/afni-latest /opt/afni-latest
+COPY --from=pennbbl/qsiprep-afni:${TAG_AFNI} /opt/afni-latest /opt/afni-latest
 ENV PATH="$PATH:/opt/afni-latest" \
     AFNI_INSTALLDIR=/opt/afni-latest \
     AFNI_IMSAVE_WARNINGS=NO
 
 ## Python, compiled dependencies
-COPY --from=pennbbl/qsiprep-miniconda:22.1.0 /usr/local/miniconda /usr/local/miniconda
-COPY --from=pennbbl/qsiprep-miniconda:22.1.0 /home/qsiprep/.dipy /home/qsiprep/.dipy
+COPY --from=pennbbl/qsiprep-miniconda:${TAG_MINICONDA} /usr/local/miniconda /usr/local/miniconda
+COPY --from=pennbbl/qsiprep-miniconda:${TAG_MINICONDA} /home/qsiprep/.dipy /home/qsiprep/.dipy
 ENV PATH="/usr/local/miniconda/bin:$PATH"
 
 RUN apt-get update -qq \
