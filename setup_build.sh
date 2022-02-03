@@ -18,6 +18,20 @@ export TAG_MINICONDA=22.1.0
 export TAG_AFNI=22.2.0
 
 
+echo "Settings:"
+echo "----------"
+echo ""
+echo "BUILD_TAG=${BUILD_TAG}"
+echo "TAG_FSL=${TAG_FSL}"
+echo "TAG_FREESURFER=${TAG_FREESURFER}"
+echo "TAG_ANTS=${TAG_ANTS}"
+echo "TAG_MRTRIX3=${TAG_MRTRIX3}"
+echo "TAG_3TISSUE=${TAG_3TISSUE}"
+echo "TAG_DSISTUDIO=${TAG_DSISTUDIO}"
+echo "TAG_MINICONDA=${TAG_MINICONDA}"
+echo "TAG_AFNI=${TAG_AFNI}"
+
+
 do_build() {
 
     DOCKER_BUILDKIT=1 \

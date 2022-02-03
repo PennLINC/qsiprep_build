@@ -14,8 +14,17 @@ build: &build
           if [[ -n "$CIRCLE_TAG" ]]; then
             source setup_build.sh
             required_tag=$(printenv ${VERSION_TAG})
-            needs_build=$(dpkg --compare-versions "${required_tag}" lt "${CIRCLE_TAG}")
-            if [[ "${needs_build}" -ne 0 ]]; then
+            needs_build=1
+
+            # Do we need to build this?
+            dpkg --compare-versions "${required_tag}" lt "${CIRCLE_TAG}" \
+                && needs_build=0
+
+            echo "needs_build=${needs_build}"
+            echo "required_tag=${required_tag}"
+            echo "CIRCLE_TAG=${CIRCLE_TAG}"
+
+            if [[ ${needs_build} -eq 0 ]]; then
               echo "Older version of dependency already exists, no need to build"
               circleci-agent step halt
             fi
