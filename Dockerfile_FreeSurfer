@@ -16,16 +16,14 @@ RUN curl -sSL https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.1/frees
     --exclude='freesurfer/mni/*' \
     --exclude='freesurfer/average/*' \
     --exclude='freesurfer/subjects/*' \
-    --exclude='freesurfer/trctrain'
-
-RUN find /opt/freesurfer/bin -type f -not \( \
+    --exclude='freesurfer/trctrain' \
+  && find /opt/freesurfer/bin -type f -not \( \
         -name mri_rigid_register -or \
         -name mri_robust_register -or \
         -name mri_robust_register.bin -or \
         -name mri_robust_template -or \
         -name lta_convert -or \
         -name lta_diff \) \
-        -delete \
-    && cd /opt/freesurfer
+        -delete
          
 
