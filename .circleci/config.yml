@@ -1,10 +1,99 @@
 version: 2.1
+
+build: &build
+  docker:
+    - image: cimg/base:2020.09
+  working_directory: /tmp/src/qsiprep_build
+  steps:
+    - checkout
+    - setup_remote_docker:
+        version: 19.03.12
+    - run:
+        name: Check whether build should be skipped
+        command: |
+          if [[ -n "$CIRCLE_TAG" ]]; then
+            source setup_build.sh
+            required_tag=$(printenv ${VERSION_TAG})
+            needs_build=$(dpkg --compare-versions "${required_tag}" lt "${CIRCLE_TAG}")
+            if [[ "${needs_build}" -ne 0 ]]; then
+              echo "Older version of dependency already exists, no need to build"
+              circleci-agent step halt
+            fi
+          else
+            echo "skipping non-tagged versions"
+            circleci-agent step halt
+          fi
+
+    - run:
+        name: Build and push
+        no_output_timeout: 2h
+        command: |
+          DOCKER_BUILDKIT=1 \
+          BUILDKIT_PROGRESS=plain \
+          docker build \
+            --rm=false \
+            -f ${BUILD_FILE} \
+            -t pennbbl/${IMG_NAME}:${CIRCLE_TAG} .
+          if [[ -n "$DOCKER_PASS" ]]; then
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push pennbbl/${IMG_NAME}:$CIRCLE_TAG
+          fi
+
 jobs:
+
+  build_FSL:
+    environment:
+      VERSION_TAG: "TAG_FSL"
+      IMG_NAME: "qsiprep-fsl"
+      BUILD_FILE: "Dockerfile_FSL"
+    <<: *build
+  
+  build_FreeSurfer:
+    environment:
+      VERSION_TAG: "TAG_FREESURFER"
+      IMG_NAME: "qsiprep-freesurfer"
+      BUILD_FILE: "Dockerfile_FreeSurfer"
+    <<: *build
+      
+  build_3Tissue:
+    environment:
+      VERSION_TAG: "TAG_3TISSUE"
+      IMG_NAME: "qsiprep-3tissue"
+      BUILD_FILE: "Dockerfile_3Tissue"
+    <<: *build
+
+  build_MRtrix3:
+    environment:
+      VERSION_TAG: "TAG_MRTRIX3"
+      IMG_NAME: "qsiprep-mrtrix3"
+      BUILD_FILE: "Dockerfile_MRtrix3"
+    <<: *build
+
+  build_DSIStudio:
+    environment:
+      VERSION_TAG: "TAG_DSISTUDIO"
+      IMG_NAME: "qsiprep-dsistudio"
+      BUILD_FILE: "Dockerfile_DSIStudio"
+    <<: *build
+
+  build_ANTs:
+    environment:
+      VERSION_TAG: "TAG_ANTS"
+      IMG_NAME: "qsiprep-ants"
+      BUILD_FILE: "Dockerfile_ANTs"
+    <<: *build
+
+  build_Miniconda:
+    environment:
+      VERSION_TAG: "TAG_MINICONDA"
+      IMG_NAME: "qsiprep-miniconda"
+      BUILD_FILE: "Dockerfile_Miniconda"
+    <<: *build
+
 
   build:
     environment:
       TZ: "/usr/share/zoneinfo/America/New_York"
-      SCRATCH: "/scratch"
     docker:
       - image: cimg/base:2020.09
     working_directory: /tmp/src/qsiprep_build
@@ -14,34 +103,77 @@ jobs:
          version: 19.03.12
 
       - run:
-          name: Build Docker image
+          name: Build and push
           no_output_timeout: 5h
           command: |
-              DOCKER_BUILDKIT=1 \
-              BUILDKIT_PROGRESS=plain \
-              docker build \
-                --rm=false \
-                -t pennbbl/qsiprep_build:latest .
-
-      - run:
-          name: Deploy to Docker Hub
-          no_output_timeout: 1h
-          command: |
-            if [[ -n "$DOCKER_PASS" ]]; then
+            if [[ -n "$CIRCLE_TAG" ]]; then
+              source setup_build.sh
+              do_build
               docker login -u $DOCKER_USER -p $DOCKER_PASS
-              if [[ -n "$CIRCLE_TAG" ]]; then
-                docker push pennbbl/qsiprep_build:latest
-                docker tag pennbbl/qsiprep_build pennbbl/qsiprep_build:$CIRCLE_TAG
-                docker push pennbbl/qsiprep_build:$CIRCLE_TAG
-              fi
+              docker push pennbbl/qsiprep_build:$CIRCLE_TAG
             fi
 
+  deployable:
+    docker:
+      - image: busybox:latest
+    steps:
+      - run: echo Deploying!
 
 workflows:
   version: 2
   build_test_deploy:
     jobs:
+      - build_FSL:
+          filters:
+            tags:
+              only: /.*/
+
+      - build_FreeSurfer:
+          filters:
+            tags:
+              only: /.*/
+
+      - build_3Tissue:
+          filters:
+            tags:
+              only: /.*/
+
+      - build_MRtrix3:
+          filters:
+            tags:
+              only: /.*/
+
+      - build_DSIStudio:
+          filters:
+            tags:
+              only: /.*/
+
+      - build_ANTs:
+          filters:
+            tags:
+              only: /.*/
+
+      - build_Miniconda:
+          filters:
+            tags:
+              only: /.*/
+
+      - deployable:
+          requires:
+            - build_FSL
+            - build_FreeSurfer
+            - build_3Tissue
+            - build_MRtrix3
+            - build_DSIStudio
+            - build_ANTs
+            - build_Miniconda
+          filters:
+            tags:
+              only: /.*/
+
       - build:
+          requires:
+            - deployable 
           filters:
             tags:
               only: /.*/
