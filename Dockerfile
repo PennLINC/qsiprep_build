@@ -8,19 +8,19 @@ ARG TAG_MINICONDA
 ARG TAG_AFNI
 
 # COPY can't handle variables, so here we go
-FROM pennbbl/qsiprep-fsl:${TAG_FSL} as qsiprep-fsl
-FROM pennbbl/qsiprep-freesurfer:${TAG_FREESURFER} as qsiprep-freesurfer
-FROM pennbbl/qsiprep-ants:${TAG_ANTS} as qsiprep-ants
-FROM pennbbl/qsiprep-mrtrix3:${TAG_MRTRIX3} as qsiprep-mrtrix3
-FROM pennbbl/qsiprep-3tissue:${TAG_3TISSUE} as qsiprep-3tissue
-FROM pennbbl/qsiprep-dsistudio:${TAG_DSISTUDIO} as qsiprep-dsistudio
-FROM pennbbl/qsiprep-miniconda:${TAG_MINICONDA} as qsiprep-miniconda
-FROM pennbbl/qsiprep-afni:${TAG_AFNI} as qsiprep-afni
+FROM pennbbl/qsiprep-fsl:${TAG_FSL} as build_fsl
+FROM pennbbl/qsiprep-freesurfer:${TAG_FREESURFER} as build_freesurfer
+FROM pennbbl/qsiprep-ants:${TAG_ANTS} as build_ants
+FROM pennbbl/qsiprep-mrtrix3:${TAG_MRTRIX3} as build_mrtrix3
+FROM pennbbl/qsiprep-3tissue:${TAG_3TISSUE} as build_3tissue
+FROM pennbbl/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
+FROM pennbbl/qsiprep-miniconda:${TAG_MINICONDA} as build_miniconda
+FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM nvidia/cuda:10.2-runtime-ubuntu18.04 as cuda10
 
 FROM cuda10
 ## FSL
-COPY --from=qsiprep-fsl /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
+COPY --from=build_fsl /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
 ENV FSLDIR="/opt/fsl-6.0.5.1" \
     FSLOUTPUTTYPE="NIFTI_GZ" \
     FSLMULTIFILEQUIT="TRUE" \
@@ -33,14 +33,14 @@ ENV FSLDIR="/opt/fsl-6.0.5.1" \
     FSL_DEPS="libquadmath0"
 
 ## ANTs
-COPY --from=qsiprep-ants /opt/ants /opt/ants
+COPY --from=build_ants /opt/ants /opt/ants
 ENV ANTSPATH="/opt/ants/bin" \
     LD_LIBRARY_PATH="/opt/ants/lib:$LD_LIBRARY_PATH" \
     PATH="$PATH:/opt/ants/bin" \
     ANTS_DEPS="zlib1g-dev"
 
 ## DSI Studio
-COPY --from=qsiprep-dsistudio /opt/dsi-studio /opt/dsi-studio
+COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
 ENV QT_BASE_DIR="/opt/qt512"
 ENV QTDIR="$QT_BASE_DIR" \
     LD_LIBRARY_PATH="$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" \
@@ -49,14 +49,14 @@ ENV QTDIR="$QT_BASE_DIR" \
     DSI_STUDIO_DEPS="qt512base qt512charts-no-lgpl"
 
 ## MRtrix3
-COPY --from=qsiprep-mrtrix3 /opt/mrtrix3-latest /opt/mrtrix3-latest
+COPY --from=build_mrtrix3 /opt/mrtrix3-latest /opt/mrtrix3-latest
 ## MRtrix3-3Tissue
-COPY --from=qsiprep-3tissue /opt/3Tissue /opt/3Tissue
+COPY --from=build_3tissue /opt/3Tissue /opt/3Tissue
 ENV PATH="$PATH:/opt/mrtrix3-latest/bin:/opt/3Tissue/bin" \
     MRTRIX3_DEPS="bzip2 ca-certificates curl libpng16-16 libtiff5"
 
 ## Freesurfer
-COPY --from=qsiprep-freesurfer /opt/freesurfer /opt/freesurfer
+COPY --from=build_freesurfer /opt/freesurfer /opt/freesurfer
 # Simulate SetUpFreeSurfer.sh
 ENV FSL_DIR="/opt/fsl-6.0.5.1" \
     OS="Linux" \
@@ -77,14 +77,14 @@ ENV PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5" \
     FREESURFER_DEPS="bc ca-certificates curl libgomp1 libxmu6 libxt6 tcsh perl"
 
 ## AFNI
-COPY --from=qsiprep-afni /opt/afni-latest /opt/afni-latest
+COPY --from=build_afni /opt/afni-latest /opt/afni-latest
 ENV PATH="$PATH:/opt/afni-latest" \
     AFNI_INSTALLDIR=/opt/afni-latest \
     AFNI_IMSAVE_WARNINGS=NO
 
 ## Python, compiled dependencies
-COPY --from=qsiprep-miniconda /usr/local/miniconda /usr/local/miniconda
-COPY --from=qsiprep-miniconda /home/qsiprep/.dipy /home/qsiprep/.dipy
+COPY --from=build_miniconda /usr/local/miniconda /usr/local/miniconda
+COPY --from=build_miniconda /home/qsiprep/.dipy /home/qsiprep/.dipy
 ENV PATH="/usr/local/miniconda/bin:$PATH"
 
 RUN apt-get update -qq \
