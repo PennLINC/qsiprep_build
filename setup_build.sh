@@ -24,13 +24,14 @@ do_build() {
     BUILDKIT_PROGRESS=plain \
     docker build -t \
         pennbbl/qsiprep_build:${BUILD_TAG} \
-        export TAG_FSL=${TAG_FSL} \
-        export TAG_FREESURFER=${TAG_FREESURFER} \
-        export TAG_ANTS=${TAG_ANTS} \
-        export TAG_MRTRIX3=${TAG_MRTRIX3} \
-        export TAG_3TISSUE=${TAG_3TISSUE} \
-        export TAG_DSISTUDIO=${TAG_DSISTUDIO} \
-        export TAG_MINICONDA=${TAG_MINICONDA} \
-        export TAG_AFNI=${TAG_AFNI}
+        --build-arg TAG_FSL=${TAG_FSL} \
+        --build-arg TAG_FREESURFER=${TAG_FREESURFER} \
+        --build-arg TAG_ANTS=${TAG_ANTS} \
+        --build-arg TAG_MRTRIX3=${TAG_MRTRIX3} \
+        --build-arg TAG_3TISSUE=${TAG_3TISSUE} \
+        --build-arg TAG_DSISTUDIO=${TAG_DSISTUDIO} \
+        --build-arg TAG_MINICONDA=${TAG_MINICONDA} \
+        --build-arg TAG_AFNI=${TAG_AFNI} \
+        .
 
 }
