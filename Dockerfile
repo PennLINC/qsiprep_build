@@ -166,7 +166,7 @@ RUN curl -o pandoc-2.2.2.1-1-amd64.deb -sSL "https://github.com/jgm/pandoc/relea
 RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
     && apt-get update \
     && apt install -y --no-install-recommends \
-    ${DSI_STUDIO_DEPS} wget \
+    ${DSI_STUDIO_DEPS} wget git \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
