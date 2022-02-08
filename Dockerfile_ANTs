@@ -77,11 +77,7 @@ RUN mkdir /tmp/ants \
         antsSliceRegularizedRegistration \
         antsUtilitiesTesting \
         sccan \
-        simpleSynRegistration \
-        waitForPBSQJobs.pl \
-        waitForSGEQJobs.pl \
-        waitForSlurmJobs.pl \
-        waitForXGridJobs.pl
+        simpleSynRegistration
 
 FROM base
 COPY --from=builder /opt/ants /opt/ants
