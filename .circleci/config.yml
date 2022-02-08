@@ -90,6 +90,7 @@ jobs:
       VERSION_TAG: "TAG_ANTS"
       IMG_NAME: "qsiprep-ants"
       BUILD_FILE: "Dockerfile_ANTs"
+    resource_class: large
     <<: *build
 
   build_Miniconda:
