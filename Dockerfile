@@ -169,6 +169,12 @@ RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
     ${DSI_STUDIO_DEPS} wget git \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Install ACPC-detect
+WORKDIR /opt/art
+ENV PATH="/opt/art/bin:$PATH"
+RUN cd /opt/art \
+    && curl -fsSL https://osf.io/73h5s/download \
+    | tar xz --strip-components 1
 
 # Create a shared $HOME directory
 RUN useradd -m -s /bin/bash -G users qsiprep
@@ -184,6 +190,7 @@ ENV \
     KMP_WARNINGS=0 \
     CRN_SHARED_DATA=/niworkflows_data \
     IS_DOCKER_8395080871=1 \
+    ARTHOME="/opt/art" \
     DIPY_HOME=/home/qsiprep/.dipy
 
 WORKDIR /root/
