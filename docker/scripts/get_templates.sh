@@ -44,4 +44,9 @@ echo "Getting OASIS DKT31 template"
 GET "$OASIS_DKT31_TEMPLATE" "$OASIS_DKT31_SHA256"
 echo "Getting qsiprep's BOLDref template"
 GET "$EPI_TEMPLATE" "$EPI_SHA256"
+
+cd $CRN_SHARED_DATA
+wget -nv https://upenn.box.com/shared/static/yoc84of6qicgiz3e1ag44ajnm4a6gncc.gz
+tar xvfz yoc84of6qicgiz3e1ag44ajnm4a6gncc.gz
+rm yoc84of6qicgiz3e1ag44ajnm4a6gncc.gz
 echo "Done!"
