@@ -53,7 +53,7 @@ COPY --from=build_mrtrix3 /opt/mrtrix3-latest /opt/mrtrix3-latest
 ## MRtrix3-3Tissue
 COPY --from=build_3tissue /opt/3Tissue /opt/3Tissue
 ENV PATH="$PATH:/opt/mrtrix3-latest/bin:/opt/3Tissue/bin" \
-    MRTRIX3_DEPS="bzip2 ca-certificates curl libpng16-16 libtiff5"
+    MRTRIX3_DEPS="bzip2 ca-certificates curl libpng16-16 libblas3 liblapack3"
 
 ## Freesurfer
 COPY --from=build_freesurfer /opt/freesurfer /opt/freesurfer
