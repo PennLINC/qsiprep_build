@@ -40,7 +40,6 @@ ENV ANTSPATH="/opt/ants/bin" \
     ANTS_DEPS="zlib1g-dev"
 
 ## DSI Studio
-COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
 ENV QT_BASE_DIR="/opt/qt512"
 ENV QTDIR="$QT_BASE_DIR" \
     LD_LIBRARY_PATH="$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" \
@@ -168,6 +167,7 @@ RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
     && apt install -y --no-install-recommends \
     ${DSI_STUDIO_DEPS} ${MRTRIX3_DEPS} wget git \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
 
 # Install ACPC-detect
 WORKDIR /opt/art
@@ -191,7 +191,11 @@ ENV \
     CRN_SHARED_DATA=/niworkflows_data \
     IS_DOCKER_8395080871=1 \
     ARTHOME="/opt/art" \
-    DIPY_HOME=/home/qsiprep/.dipy
+    DIPY_HOME=/home/qsiprep/.dipy \
+    QTDIR=$QT_BASE_DIR \
+    PATH=$QT_BASE_DIR/bin:$PATH \
+    LD_LIBRARY_PATH=$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH \
+    PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
 WORKDIR /root/
 
@@ -220,4 +224,5 @@ RUN  mkdir -p /sngl/data \
   && mkdir /sngl/spec \
   && mkdir /sngl/eddy \
   && mkdir /sngl/filter \
-  && chmod a+rwx /sngl/*
+  && chmod a+rwx /sngl/* \
+  && ldconfig
