@@ -206,7 +206,7 @@ RUN mkdir $CRN_SHARED_DATA && \
     chmod -R a+rX $CRN_SHARED_DATA
 
 RUN ln -s /opt/fsl-6.0.5.1/bin/eddy_cuda10.2 /opt/fsl-6.0.5.1/bin/eddy_cuda \
-    && ln -sfv ln -sfv /opt/qt512/lib/libQt5Core.so.5.12 /usr/lib/libQt5Core.so.5 \
+    && ln -sfv ln -sfv /opt/qt512/lib/libQt5Core.so.5.12 /usr/lib/x86_64-linux-gnu/libQt5Core.so.5 \
     && ldconfig
 
 # Download the atlases
