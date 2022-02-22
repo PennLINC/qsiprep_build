@@ -205,7 +205,9 @@ RUN mkdir $CRN_SHARED_DATA && \
     /root/get_templates.sh && \
     chmod -R a+rX $CRN_SHARED_DATA
 
-RUN ln -s /opt/fsl-6.0.5.1/bin/eddy_cuda10.2 /opt/fsl-6.0.5.1/bin/eddy_cuda
+RUN ln -s /opt/fsl-6.0.5.1/bin/eddy_cuda10.2 /opt/fsl-6.0.5.1/bin/eddy_cuda \
+    && ln -sfv ln -sfv /opt/qt512/lib/libQt5Core.so.5.12 /usr/lib/libQt5Core.so.5 \
+    && ldconfig
 
 # Download the atlases
 ENV QSIRECON_ATLAS /atlas/qsirecon_atlases
@@ -224,5 +226,4 @@ RUN  mkdir -p /sngl/data \
   && mkdir /sngl/spec \
   && mkdir /sngl/eddy \
   && mkdir /sngl/filter \
-  && chmod a+rwx /sngl/* \
-  && ldconfig
+  && chmod a+rwx /sngl/*
