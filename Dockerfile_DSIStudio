@@ -46,10 +46,3 @@ RUN source /opt/qt512/bin/qt512-env.sh \
   && cd dsi_studio_64 \
   && mv ../build/dsi_studio . \
   && rm -rf /opt/dsi-studio/src /opt/dsi-studio/build
-
-RUN curl -sL https://github.com/probonopd/linuxdeployqt/releases/download/7/linuxdeployqt-7-x86_64.AppImage > linuxdeployqt \
-  && chmod a+x linuxdeployqt \
-  && ./linuxdeployqt --appimage-extract \
-  && ./squashfs-root/AppRun /opt/dsi-studio/dsi_studio_64/dsi_studio -unsupported-bundle-everything -no-translations -bundle-non-qt-libs \
-  && rm -fr squashfs-root \
-  && rm -fr linuxdeployqt
