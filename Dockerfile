@@ -205,6 +205,7 @@ RUN mkdir $CRN_SHARED_DATA && \
     /root/get_templates.sh && \
     chmod -R a+rX $CRN_SHARED_DATA
 
+RUN ln -s /opt/fsl-6.0.5.1/bin/eddy_cuda10.2 /opt/fsl-6.0.5.1/bin/eddy_cuda
 # Make it ok for singularity on CentOS
 RUN strip --remove-section=.note.ABI-tag /opt/qt512/lib/libQt5Core.so.5.12.8 \
     && ldconfig
