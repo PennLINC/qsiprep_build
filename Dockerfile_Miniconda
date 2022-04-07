@@ -5,8 +5,9 @@ RUN apt-get update && \
                     ca-certificates \
                     curl \
                     libblas-dev \
+                    liblapack-dev \
                     build-essential \
-                    libgomp1
+                    libgomp1 
 
 # Create a shared $HOME directory
 RUN useradd -m -s /bin/bash -G users qsiprep
@@ -20,7 +21,7 @@ RUN curl -sSLO https://repo.anaconda.com/miniconda/Miniconda3-py38_4.10.3-Linux-
     rm Miniconda3-py38_4.10.3-Linux-x86_64.sh
 
 RUN /usr/local/miniconda/bin/conda install -y numpy scipy \
-    && /usr/local/miniconda/bin/pip install python-spams dmri-amico
+    && /usr/local/miniconda/bin/pip install dmri-amico
 
 RUN mkdir -p ${HOME}/.dipy \
     && /usr/local/miniconda/bin/python -c "import amico; amico.core.setup()"
