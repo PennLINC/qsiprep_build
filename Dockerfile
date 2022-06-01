@@ -212,9 +212,9 @@ ENV QSIRECON_ATLAS /atlas/qsirecon_atlases
 RUN bash -c \
     'mkdir /atlas \
     && cd  /atlas \
-    && wget -nv https://upenn.box.com/shared/static/tr5ldcrd9d4pqbs5brgit1k0iduqilgr.xz \
-    && tar xvfJm tr5ldcrd9d4pqbs5brgit1k0iduqilgr.xz \
-    && rm tr5ldcrd9d4pqbs5brgit1k0iduqilgr.xz'
+    && wget -nv https://upenn.box.com/shared/static/40f2m6dzzd8co5jx3cxpgct3zkkwm5d3.xz \
+    && tar xvfJm 40f2m6dzzd8co5jx3cxpgct3zkkwm5d3.xz \
+    && rm 40f2m6dzzd8co5jx3cxpgct3zkkwm5d3.xz'
 
 # Make singularity mount directories
 RUN  mkdir -p /sngl/data \
