@@ -92,3 +92,5 @@ scratch/
 
 notebooks/*
 !notebooks/*.ipynb
+
+drbuddi
