@@ -14,15 +14,20 @@ RUN apt-get update && \
                     git \
                     g++ \
                     zlib1g-dev \
-                    bc
+                    bc && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt install -y --no-install-recommends \
+        g++-9 gcc-9 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9
 
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
     | apt-key add - \
   && apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ bionic main' \
   && apt-get update \
-  && apt-get -y install cmake=3.18.3-0kitware1 cmake-data=3.18.3-0kitware1
+  && apt-get -y install cmake=3.23.2-0kitware1ubuntu18.04.1 cmake-data=3.23.2-0kitware1ubuntu18.04.1
 
-ARG ANTS_SHA=e00e8164d7a92f048e5d06e388a15c1ee8e889c4
+ARG ANTS_SHA=cb8cbc5f1f120d7249b0fb8245f35d3422533693
 RUN mkdir /tmp/ants \
     && cd /tmp \
     && git clone https://github.com/ANTsX/ANTs.git \
@@ -36,6 +41,8 @@ RUN mkdir /tmp/ants \
     && cmake \
         -GNinja \
         -DBUILD_TESTING=OFF \
+        -DCMAKE_C_COMPILER=/usr/bin/gcc-9 \
+        -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 \
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_INSTALL_PREFIX=/opt/ants \
         /tmp/ants/source \
@@ -81,6 +88,7 @@ RUN mkdir /tmp/ants \
 
 FROM base
 COPY --from=builder /opt/ants /opt/ants
+COPY --from=builder /tmp/ants /tmp/ants
 
 LABEL maintainer="ANTsX team: Forked by QSIPrep team" \
       description="ANTs is part of the ANTsX ecosystem (https://github.com/ANTsX). \
@@ -91,7 +99,7 @@ ENV ANTSPATH="/opt/ants/bin" \
     LD_LIBRARY_PATH="/opt/ants/lib:$LD_LIBRARY_PATH"
 RUN apt-get update \
     && apt install -y --no-install-recommends zlib1g-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /var/tmp/*
 
 WORKDIR /data
 
