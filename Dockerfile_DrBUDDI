@@ -1,4 +1,4 @@
-FROM pennbbl/qsiprep-ants:22.7.0 as base
+FROM pennbbl/qsiprep-ants:22.7.1 as base
 FROM base as builder
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 
@@ -19,11 +19,17 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
   && apt-get update \
   && apt-get -y install cmake=3.23.2-0kitware1ubuntu18.04.1 cmake-data=3.23.2-0kitware1ubuntu18.04.1
 
-ENV CXX=/usr/bin/g++-9
-COPY drbuddi /src/drbuddi
+RUN echo 1234
+COPY TORTOISEV4 /src/tortoise4
 
-RUN cd /src/drbuddi && \
-    cmake . && \
+RUN cd /src/tortoise4/TORTOISEV4 && \
+    cmake . \
+      -DCMAKE_C_COMPILER=/usr/bin/gcc-9 \
+      -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 \
+      -DUSECUDA=0 \
+      -DITK_DIR=/tmp/ants/build/ITKv5-build \
+      -DISDEBUG=0 \
+      && \
     make
 
 # FROM base
