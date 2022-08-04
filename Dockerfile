@@ -167,7 +167,7 @@ RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
 COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
 
 # Install gcc-9
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test && \
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
     && apt-get update \
     && apt-get install --no-install-recommends libstdc++6 \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
