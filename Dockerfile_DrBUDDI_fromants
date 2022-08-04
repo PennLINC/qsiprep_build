@@ -1,4 +1,5 @@
-FROM nvidia/cuda:10.2-runtime-ubuntu18.04 as base
+FROM pennbbl/qsiprep-ants:22.8.0 as base
+FROM base as builder
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 
 RUN apt update && apt full-upgrade -y && \
@@ -6,19 +7,11 @@ RUN apt update && apt full-upgrade -y && \
   add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
   apt-get update && \
   apt install -y --no-install-recommends \
-    build-essential \
-    apt-transport-https \
-    ca-certificates \
-    gnupg \
-    wget \
-    ninja-build \
+    libboost-all-dev \
     zlib1g-dev \
-    zlib1g-dev \
-    libblas-dev liblapack-dev \
     wget \
     g++-9 gcc-9 \
-    fftw3 libfftw3-dev \
-    libeigen3-dev
+    libeigen3-dev fftw3 libfftw3-dev
 
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
     | apt-key add - \
@@ -26,37 +19,18 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
   && apt-get update \
   && apt-get -y install cmake=3.23.2-0kitware1ubuntu18.04.1 cmake-data=3.23.2-0kitware1ubuntu18.04.1
 
-
-# Get boost
-RUN mkdir /boost && cd /boost && \
-  wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz && \
-  tar -xvf boost_1_76_0.tar.gz && \
-  cd boost_1_76_0 && \
-  ./bootstrap.sh \
-    --with-libraries=iostreams,filesystem,system,regex \
-    --prefix=/usr/local/boost176 && \
-  ./b2 install
-
-RUN \
-  mkdir /ITK && cd /ITK && \
-  wget https://github.com/InsightSoftwareConsortium/ITK/releases/download/v5.3rc03/InsightToolkit-5.3rc03.tar.gz && \
-  tar -xvf InsightToolkit-5.3rc03.tar.gz && \
-  mkdir InsightToolkit-5.3rc03_build && \
-  cd InsightToolkit-5.3rc03_build && \
-  cmake \
-    -DCMAKE_C_COMPILER=/usr/bin/gcc-9 \
-    -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 \
-    ../InsightToolkit-5.3rc03 && \
-  make -j 2
-
-
+RUN echo 1234
 COPY TORTOISEV4 /src/tortoise4
+
+RUN apt-get install -y
+
 RUN cd /src/tortoise4/TORTOISEV4 && \
     cmake . \
       -DCMAKE_C_COMPILER=/usr/bin/gcc-9 \
       -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 \
       -DUSECUDA=0 \
-      -DITK_DIR=/ITK/InsightToolkit-5.3rc03_build \
+      -DITK_DIR=/tmp/ants/build/ITKv5-build \
+      -DISDEBUG=0 \
       && \
     make
 
