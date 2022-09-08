@@ -151,7 +151,6 @@ RUN echo "Downloading FSL ..." \
         fslvbm_3_proc \
         fslwish \
         ftoz \
-        fugue \
         generateConfounds \
         generate_b0 \
         generate_b0calc \
@@ -197,7 +196,6 @@ RUN echo "Downloading FSL ..." \
         possum_matrix \
         possum_plot.py \
         possum_sum \
-        prelude \
         prewhiten \
         proj_thresh \
         ptoz \
@@ -573,7 +571,7 @@ RUN echo "Downloading FSL ..." \
         standard/MNI152_T1_2mm_strucseg.nii.gz \
         standard/MNI152_T1_2mm_strucseg_periph.nii.gz
 
-    
+
 # Get fsl_sub
 RUN cd /opt/fsl-6.0.5.1/bin \
     && wget https://raw.githubusercontent.com/neurolabusc/fsl_sub/master/fsl_sub \
