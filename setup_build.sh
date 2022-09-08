@@ -8,7 +8,7 @@ fi
 export BUILD_TAG
 
 # Versions of the components
-export TAG_FSL=22.2.0
+export TAG_FSL=22.9.0
 export TAG_FREESURFER=22.2.0
 export TAG_ANTS=22.2.6
 export TAG_MRTRIX3=22.1.0
@@ -16,7 +16,7 @@ export TAG_3TISSUE=22.1.0
 export TAG_DSISTUDIO=22.2.10
 export TAG_MINICONDA=22.4.1
 export TAG_AFNI=22.2.0
-
+export TAG_TORTOISE=22.9.0
 
 echo "Settings:"
 echo "----------"

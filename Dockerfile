@@ -6,6 +6,7 @@ ARG TAG_3TISSUE
 ARG TAG_DSISTUDIO
 ARG TAG_MINICONDA
 ARG TAG_AFNI
+ARG TAG_TORTOISE
 
 # COPY can't handle variables, so here we go
 FROM pennbbl/qsiprep-fsl:${TAG_FSL} as build_fsl
@@ -16,6 +17,7 @@ FROM pennbbl/qsiprep-3tissue:${TAG_3TISSUE} as build_3tissue
 FROM pennbbl/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
 FROM pennbbl/qsiprep-miniconda:${TAG_MINICONDA} as build_miniconda
 FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
+FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
 FROM nvidia/cuda:10.2-runtime-ubuntu18.04 as cuda10
 
 FROM cuda10
@@ -80,6 +82,11 @@ COPY --from=build_afni /opt/afni-latest /opt/afni-latest
 ENV PATH="$PATH:/opt/afni-latest" \
     AFNI_INSTALLDIR=/opt/afni-latest \
     AFNI_IMSAVE_WARNINGS=NO
+
+## TORTOISE
+COPY --from=build_tortoise /src/tortoise4/bin /src/tortoise4/bin
+ENV PATH="$PATH:/src/tortoise4/bin" \
+    TORTOISE_DEPS=""
 
 ## Python, compiled dependencies
 COPY --from=build_miniconda /usr/local/miniconda /usr/local/miniconda
