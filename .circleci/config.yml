@@ -42,7 +42,9 @@ build: &build
           docker build \
             --rm=false \
             -f ${BUILD_FILE} \
+            --build-arg TAG_ANTS=${TAG_ANTS} \
             -t pennbbl/${IMG_NAME}:${CIRCLE_TAG} .
+
           if [[ -n "$DOCKER_PASS" ]]; then
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker push pennbbl/${IMG_NAME}:$CIRCLE_TAG
@@ -56,14 +58,14 @@ jobs:
       IMG_NAME: "qsiprep-fsl"
       BUILD_FILE: "Dockerfile_FSL"
     <<: *build
-  
+
   build_FreeSurfer:
     environment:
       VERSION_TAG: "TAG_FREESURFER"
       IMG_NAME: "qsiprep-freesurfer"
       BUILD_FILE: "Dockerfile_FreeSurfer"
     <<: *build
-      
+
   build_3Tissue:
     environment:
       VERSION_TAG: "TAG_3TISSUE"
@@ -100,6 +102,12 @@ jobs:
       BUILD_FILE: "Dockerfile_Miniconda"
     <<: *build
 
+  build_TORTOISE:
+    environment:
+      VERSION_TAG: "TAG_TORTOISE"
+      IMG_NAME: "qsiprep-drbuddi"
+      BUILD_FILE: "Dockerfile_TORTOISE"
+    <<: *build
 
   build:
     environment:
@@ -168,6 +176,11 @@ workflows:
             tags:
               only: /.*/
 
+      - build_TORTOISE:
+          filters:
+            tags:
+              only: /.*/
+
       - deployable:
           requires:
             - build_FSL
@@ -183,7 +196,7 @@ workflows:
 
       - build:
           requires:
-            - deployable 
+            - deployable
           filters:
             tags:
               only: /.*/

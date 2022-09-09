@@ -1,4 +1,6 @@
-FROM pennbbl/qsiprep-ants:22.8.0 as base
+ARG TAG_ANTS
+
+FROM pennbbl/qsiprep-ants:${TAG_ANTS} as base
 FROM base as builder
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 
@@ -19,7 +21,6 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
   && apt-get update \
   && apt-get -y install cmake=3.23.2-0kitware1ubuntu18.04.1 cmake-data=3.23.2-0kitware1ubuntu18.04.1
 
-RUN echo 1234
 COPY TORTOISEV4 /src/tortoise4
 
 RUN apt-get install -y
@@ -33,21 +34,5 @@ RUN cd /src/tortoise4/TORTOISEV4 && \
       -DISDEBUG=0 \
       && \
     make
-
-# FROM base
-# COPY --from=builder /opt/ants /opt/ants
-
-# LABEL maintainer="ANTsX team: Forked by QSIPrep team" \
-#       description="ANTs is part of the ANTsX ecosystem (https://github.com/ANTsX). \
-# ANTs Citation: https://pubmed.ncbi.nlm.nih.gov/24879923"
-
-# ENV ANTSPATH="/opt/ants/bin" \
-#     PATH="/opt/ants/bin:$PATH" \
-#     LD_LIBRARY_PATH="/opt/ants/lib:$LD_LIBRARY_PATH"
-# RUN apt-get update \
-#     && apt install -y --no-install-recommends zlib1g-dev \
-#     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# WORKDIR /data
 
 CMD ["/bin/bash"]

@@ -1,4 +1,5 @@
 FROM nvidia/cuda:10.2-runtime-ubuntu18.04
+ARG TAG_ANTS
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -25,5 +26,5 @@ RUN curl -sSL https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.1/frees
         -name lta_convert -or \
         -name lta_diff \) \
         -delete
-         
+
 

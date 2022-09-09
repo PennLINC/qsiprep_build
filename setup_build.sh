@@ -30,6 +30,7 @@ echo "TAG_3TISSUE=${TAG_3TISSUE}"
 echo "TAG_DSISTUDIO=${TAG_DSISTUDIO}"
 echo "TAG_MINICONDA=${TAG_MINICONDA}"
 echo "TAG_AFNI=${TAG_AFNI}"
+echo "TAG_TORTOISE=${TAG_TORTOISE}"
 
 
 do_build() {
@@ -46,6 +47,7 @@ do_build() {
         --build-arg TAG_DSISTUDIO=${TAG_DSISTUDIO} \
         --build-arg TAG_MINICONDA=${TAG_MINICONDA} \
         --build-arg TAG_AFNI=${TAG_AFNI} \
+        --build-arg TAG_TORTOISE=${TAG_TORTOISE} \
         .
 
 }

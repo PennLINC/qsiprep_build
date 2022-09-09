@@ -86,12 +86,14 @@ ENV PATH="$PATH:/opt/afni-latest" \
 ## TORTOISE
 COPY --from=build_tortoise /src/tortoise4/bin /src/tortoise4/bin
 ENV PATH="$PATH:/src/tortoise4/bin" \
-    TORTOISE_DEPS=""
+    TORTOISE_DEPS="libeigen3-dev fftw3 libfftw3-dev"
 
 ## Python, compiled dependencies
 COPY --from=build_miniconda /usr/local/miniconda /usr/local/miniconda
 COPY --from=build_miniconda /home/qsiprep/.dipy /home/qsiprep/.dipy
 ENV PATH="/usr/local/miniconda/bin:$PATH"
+
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 
 RUN apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
@@ -169,7 +171,7 @@ RUN curl -o pandoc-2.2.2.1-1-amd64.deb -sSL "https://github.com/jgm/pandoc/relea
 RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
     && apt-get update \
     && apt install -y --no-install-recommends \
-    ${DSI_STUDIO_DEPS} ${MRTRIX3_DEPS} wget git binutils \
+    ${DSI_STUDIO_DEPS} ${MRTRIX3_DEPS} ${TORTOISE_DEPS} wget git binutils \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
 

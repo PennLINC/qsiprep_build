@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 FROM nvidia/cuda:10.2-runtime-ubuntu18.04
+ARG TAG_ANTS
 
 # AFNI latest (neurodocker build)
 RUN apt-get update -qq \

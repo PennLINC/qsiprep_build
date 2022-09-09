@@ -1,4 +1,5 @@
 FROM nvidia/cuda:10.2-runtime-ubuntu18.04
+ARG TAG_ANTS
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -7,7 +8,7 @@ RUN apt-get update && \
                     libblas-dev \
                     liblapack-dev \
                     build-essential \
-                    libgomp1 
+                    libgomp1
 
 # Create a shared $HOME directory
 RUN useradd -m -s /bin/bash -G users qsiprep
