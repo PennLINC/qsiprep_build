@@ -16,7 +16,7 @@ export TAG_3TISSUE=22.1.0
 export TAG_DSISTUDIO=22.2.10
 export TAG_MINICONDA=22.4.1
 export TAG_AFNI=22.2.0
-export TAG_TORTOISE=22.9.0
+export TAG_TORTOISE=22.10.0
 
 echo "Settings:"
 echo "----------"
