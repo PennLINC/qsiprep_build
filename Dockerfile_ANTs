@@ -45,6 +45,8 @@ RUN mkdir /tmp/ants \
         -DCMAKE_C_COMPILER=/usr/bin/gcc-9 \
         -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 \
         -DBUILD_SHARED_LIBS=ON \
+        -DSuperBuild_ANTS_C_OPTIMIZATION_FLAGS="-mtune=x86-64 -march=x86-64" \
+        -DSuperBuild_ANTS_CXX_OPTIMIZATION_FLAGS="-mtune=x86-64 -march=x86-64" \
         -DCMAKE_INSTALL_PREFIX=/opt/ants \
         /tmp/ants/source \
     && cmake --build . --parallel 4 \
