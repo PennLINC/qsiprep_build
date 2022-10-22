@@ -28,3 +28,7 @@ RUN curl -sSL https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.1/frees
         -delete
 
 
+
+## SynthStrip
+COPY --from=freesurfer/synthstrip:1.2 /freesurfer/mri_synthstrip /opt/freesurfer/
+COPY --from=freesurfer/synthstrip:1.2 /freesurfer/models/synthstrip.*.pt /opt/freesurfer/models/
