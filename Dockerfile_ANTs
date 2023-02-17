@@ -28,7 +28,7 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
   && apt-get update \
   && apt-get -y install cmake=3.23.2-0kitware1ubuntu18.04.1 cmake-data=3.23.2-0kitware1ubuntu18.04.1
 
-ARG ANTS_SHA=cb8cbc5f1f120d7249b0fb8245f35d3422533693
+ARG ANTS_SHA=caa60eb4ad53d561f9ddd72b71a6baf2acac0078
 RUN mkdir /tmp/ants \
     && cd /tmp \
     && git clone https://github.com/ANTsX/ANTs.git \
