@@ -15,7 +15,6 @@ build: &build
             source setup_build.sh
             required_tag=$(printenv ${VERSION_TAG})
             needs_build=1
-
             # Do we need to build this?
             dpkg --compare-versions "${required_tag}" lt "${CIRCLE_TAG}" \
                 && needs_build=0
@@ -37,6 +36,7 @@ build: &build
         name: Build and push
         no_output_timeout: 2h
         command: |
+          source setup_build.sh
           DOCKER_BUILDKIT=1 \
           BUILDKIT_PROGRESS=plain \
           docker build \
@@ -78,6 +78,13 @@ jobs:
       VERSION_TAG: "TAG_MRTRIX3"
       IMG_NAME: "qsiprep-mrtrix3"
       BUILD_FILE: "Dockerfile_MRtrix3"
+    <<: *build
+
+  build_AFNI:
+    environment:
+      VERSION_TAG: "TAG_AFNI"
+      IMG_NAME: "qsiprep-afni"
+      BUILD_FILE: "Dockerfile_AFNI"
     <<: *build
 
   build_DSIStudio:
@@ -171,6 +178,11 @@ workflows:
             tags:
               only: /.*/
 
+      - build_AFNI:
+          filters:
+            tags:
+              only: /.*/
+
       - build_Miniconda:
           filters:
             tags:
@@ -190,6 +202,7 @@ workflows:
             - build_DSIStudio
             - build_ANTs
             - build_Miniconda
+            - build_AFNI
           filters:
             tags:
               only: /.*/
