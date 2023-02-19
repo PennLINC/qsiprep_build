@@ -189,6 +189,8 @@ workflows:
               only: /.*/
 
       - build_TORTOISE:
+          requires:
+            - build_ANTs
           filters:
             tags:
               only: /.*/
@@ -203,6 +205,7 @@ workflows:
             - build_ANTs
             - build_Miniconda
             - build_AFNI
+            - build_TORTOISE
           filters:
             tags:
               only: /.*/
