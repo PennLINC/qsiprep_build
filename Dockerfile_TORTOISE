@@ -9,9 +9,9 @@ RUN apt update && apt full-upgrade -y && \
   add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
   apt-get update && \
   apt install -y --no-install-recommends \
-    libboost-all-dev \
     zlib1g-dev \
     wget \
+    git \
     g++-9 gcc-9 \
     libeigen3-dev fftw3 libfftw3-dev
 
@@ -21,15 +21,28 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
   && apt-get update \
   && apt-get -y install cmake=3.23.2-0kitware1ubuntu18.04.1 cmake-data=3.23.2-0kitware1ubuntu18.04.1
 
-COPY TORTOISEV4 /src/tortoise4
 
-RUN apt-get install -y
+RUN \
+  mkdir /src \
+  && cd /src \
+  && wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz \
+  && tar -xvf boost_1_76_0.tar.gz \
+  && cd boost_1_76_0 \
+  && ln -s /usr/bin/g++-9 /usr/bin/g++ \
+  && ./bootstrap.sh --with-libraries=iostreams,filesystem,system,regex --prefix=/usr/local/boost176 \
+  && ./b2 install
 
-RUN cd /src/tortoise4/TORTOISEV4 && \
-    cmake . \
+
+ARG TORTOISE_SHA=ce3de9504e4cc8e24dc118049d7e916422266b81
+RUN \
+  cd /src \
+  && git clone https://github.com/PennLINC/TORTOISEV4.git \
+  && cd TORTOISEV4/TORTOISEV4 \
+  && cmake . \
       -DCMAKE_C_COMPILER=/usr/bin/gcc-9 \
       -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 \
       -DUSECUDA=0 \
+      -DQSIPREP=1 \
       -DITK_DIR=/tmp/ants/build/ITKv5-build \
       -DISDEBUG=0 \
       && \
