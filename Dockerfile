@@ -84,7 +84,7 @@ ENV PATH="$PATH:/opt/afni-latest" \
     AFNI_IMSAVE_WARNINGS=NO
 
 ## TORTOISE
-COPY --from=build_tortoise /src/tortoise4/bin /src/tortoise4/bin
+COPY --from=build_tortoise /src/TORTOISEV4/bin /src/TORTOISEV4/bin
 COPY --from=build_tortoise /usr/local/boost176 /usr/local/boost176
 ENV PATH="$PATH:/src/TORTOISEV4/bin" \
     TORTOISE_DEPS="libeigen3-dev fftw3 libfftw3-dev"
