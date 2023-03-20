@@ -1,34 +1,36 @@
+FROM freesurfer/freesurfer:7.3.1 as freesurfer
 FROM nvidia/cuda:10.2-runtime-ubuntu18.04
 ARG TAG_ANTS
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-                    ca-certificates \
-                    curl
+COPY --from=freesurfer \
+  /usr/local/freesurfer/bin/mri_rigid_register \
+  /opt/freesurfer/bin/mri_rigid_register
 
-# Installing freesurfer
-RUN curl -sSL https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.1/freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.1.tar.gz \
-    | tar zxv --no-same-owner -C /opt \
-    --exclude='freesurfer/diffusion' \
-    --exclude='freesurfer/docs' \
-    --exclude='freesurfer/fsfast' \
-    --exclude='freesurfer/lib/*' \
-    --exclude='freesurfer/matlab' \
-    --exclude='freesurfer/mni/*' \
-    --exclude='freesurfer/average/*' \
-    --exclude='freesurfer/subjects/*' \
-    --exclude='freesurfer/trctrain' \
-  && find /opt/freesurfer/bin -type f -not \( \
-        -name mri_rigid_register -or \
-        -name mri_robust_register -or \
-        -name mri_robust_register.bin -or \
-        -name mri_robust_template -or \
-        -name lta_convert -or \
-        -name lta_diff \) \
-        -delete
+COPY --from=freesurfer \
+  /usr/local/freesurfer/bin/mri_robust_register  \
+  /opt/freesurfer/bin/mri_robust_register
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/bin/mri_robust_template \
+  /opt/freesurfer/bin/mri_robust_template
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/bin/lta_convert  \
+  /opt/freesurfer/bin/lta_convert
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/bin/lta_diff  \
+  /opt/freesurfer/bin/lta_diff
 
 
+COPY --from=freesurfer \
+  /usr/local/freesurfer/python/scripts/mri_synthseg  \
+  /opt/freesurfer/bin/mri_synthseg
 
-## SynthStrip
-COPY --from=freesurfer/synthstrip:1.2 /freesurfer/mri_synthstrip /opt/freesurfer/
-COPY --from=freesurfer/synthstrip:1.2 /freesurfer/models/synthstrip.*.pt /opt/freesurfer/models/
+COPY --from=freesurfer \
+  /usr/local/freesurfer/models  \
+  /opt/freesurfer/models
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/python/scripts/mri_synthstrip  \
+  /opt/freesurfer/bin/mri_synthstrip

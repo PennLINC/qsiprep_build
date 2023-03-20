@@ -24,9 +24,9 @@ RUN curl -sSLO https://repo.anaconda.com/miniconda/Miniconda3-py38_4.10.3-Linux-
 RUN /usr/local/miniconda/bin/conda install -y numpy scipy \
     && /usr/local/miniconda/bin/pip install dmri-amico \
     && /usr/local/miniconda/bin/pip install torch==1.10.2 \
-    && /usr/local/miniconda/bin/pip install surfa
+    && /usr/local/miniconda/bin/pip install surfa \
+    && /usr/local/miniconda/bin/pip install tensorflow-gpu==2.2.0 keras==2.3.1 protobuf==3.20.3
 
 
 RUN mkdir -p ${HOME}/.dipy \
     && /usr/local/miniconda/bin/python -c "import amico; amico.core.setup()"
-
