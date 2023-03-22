@@ -22,7 +22,7 @@ RUN curl -sSLO https://repo.anaconda.com/miniconda/Miniconda3-py38_4.10.3-Linux-
     rm Miniconda3-py38_4.10.3-Linux-x86_64.sh
 
 RUN /usr/local/miniconda/bin/conda install -y numpy scipy \
-    && /usr/local/miniconda/bin/pip install dmri-amico \
+    && /usr/local/miniconda/bin/pip install dmri-amico==1.5.4 \
     && /usr/local/miniconda/bin/pip install torch==1.10.2 \
     && /usr/local/miniconda/bin/pip install surfa \
     && /usr/local/miniconda/bin/pip install tensorflow-gpu==2.2.0 keras==2.3.1 protobuf==3.20.3
