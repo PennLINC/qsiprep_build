@@ -56,6 +56,7 @@ RUN apt-get update -qq \
         -name "3drefit" -or \
         -name "3dcalc" -or \
         -name "3dresample" -or \
+        -name "3dFWHMx" -or \
         -name "3dAutobox" -or \
         -name "3dSkullStrip" -or \
         -name "3dAutomask" -or \
