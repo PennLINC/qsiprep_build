@@ -35,10 +35,17 @@ echo "TAG_TORTOISE=${TAG_TORTOISE}"
 
 do_build() {
 
+    INCLUDE_FSL=$1
+
+    THIS_TAG=${BUILD_TAG}
+    if [ "${INCLUDE_FSL}" == "no_fsl" ]; then
+        THIS_TAG=${BUILD_TAG}-nofsl
+    fi
+
     DOCKER_BUILDKIT=1 \
     BUILDKIT_PROGRESS=plain \
     docker build -t \
-        pennbbl/qsiprep_build:${BUILD_TAG} \
+        pennbbl/qsiprep_build:${THIS_TAG} \
         --build-arg TAG_FSL=${TAG_FSL} \
         --build-arg TAG_FREESURFER=${TAG_FREESURFER} \
         --build-arg TAG_ANTS=${TAG_ANTS} \
@@ -48,6 +55,7 @@ do_build() {
         --build-arg TAG_MINICONDA=${TAG_MINICONDA} \
         --build-arg TAG_AFNI=${TAG_AFNI} \
         --build-arg TAG_TORTOISE=${TAG_TORTOISE} \
+        --build-arg FSL_BUILD=${INCLUDE_FSL} \
         .
 
 }

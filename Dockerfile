@@ -8,6 +8,10 @@ ARG TAG_MINICONDA
 ARG TAG_AFNI
 ARG TAG_TORTOISE
 
+# TO include FSL set --build-arg FSL_BUILD=build_fsl
+# To skip it set --build-arg FSL_BUILD=no_fsl
+ARG FSL_BUILD
+
 # COPY can't handle variables, so here we go
 FROM pennbbl/qsiprep-fsl:${TAG_FSL} as build_fsl
 FROM pennbbl/qsiprep-freesurfer:${TAG_FREESURFER} as build_freesurfer
@@ -20,9 +24,15 @@ FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
 FROM nvidia/cuda:10.2-runtime-ubuntu18.04 as cuda10
 
+# Make a dummy fsl image containing no FSL
+FROM cuda10 as no_fsl
+RUN mkdir -p opt/fsl-6.0.5.1
+
+FROM ${FSL_BUILD} as this-fsl
+
 FROM cuda10
 ## FSL
-COPY --from=build_fsl /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
+COPY --from=this-fsl /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
 ENV FSLDIR="/opt/fsl-6.0.5.1" \
     FSLOUTPUTTYPE="NIFTI_GZ" \
     FSLMULTIFILEQUIT="TRUE" \
@@ -32,7 +42,8 @@ ENV FSLDIR="/opt/fsl-6.0.5.1" \
     FSLGECUDAQ="cuda.q" \
     LD_LIBRARY_PATH="/opt/fsl-6.0.5.1/lib:$LD_LIBRARY_PATH" \
     PATH="/opt/fsl-6.0.5.1/bin:$PATH" \
-    FSL_DEPS="libquadmath0"
+    FSL_DEPS="libquadmath0" \
+    FSL_BUILD="${FSL_BUILD}"
 
 ## ANTs
 COPY --from=build_ants /opt/ants /opt/ants

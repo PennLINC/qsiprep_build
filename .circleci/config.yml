@@ -128,14 +128,25 @@ jobs:
          version: 19.03.12
 
       - run:
-          name: Build and push
+          name: Build with FSL and push
           no_output_timeout: 5h
           command: |
             if [[ -n "$CIRCLE_TAG" ]]; then
               source setup_build.sh
-              do_build
+              do_build build_fsl
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               docker push pennbbl/qsiprep_build:$CIRCLE_TAG
+            fi
+
+      - run:
+          name: Build without FSL and push
+          no_output_timeout: 5h
+          command: |
+            if [[ -n "$CIRCLE_TAG" ]]; then
+              source setup_build.sh
+              do_build no_fsl
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+              docker push pennbbl/qsiprep_build:${CIRCLE_TAG}-nofsl
             fi
 
   deployable:
