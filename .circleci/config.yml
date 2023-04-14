@@ -138,6 +138,17 @@ jobs:
               docker push pennbbl/qsiprep_build:$CIRCLE_TAG
             fi
 
+  build_nofsl:
+    environment:
+      TZ: "/usr/share/zoneinfo/America/New_York"
+    docker:
+      - image: cimg/base:2020.09
+    working_directory: /tmp/src/qsiprep_build
+    steps:
+      - checkout
+      - setup_remote_docker:
+         version: 19.03.12
+
       - run:
           name: Build without FSL and push
           no_output_timeout: 5h
@@ -222,6 +233,13 @@ workflows:
               only: /.*/
 
       - build:
+          requires:
+            - deployable
+          filters:
+            tags:
+              only: /.*/
+
+      - build_nofsl:
           requires:
             - deployable
           filters:

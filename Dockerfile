@@ -26,7 +26,8 @@ FROM nvidia/cuda:10.2-runtime-ubuntu18.04 as cuda10
 
 # Make a dummy fsl image containing no FSL
 FROM cuda10 as no_fsl
-RUN mkdir -p opt/fsl-6.0.5.1
+RUN mkdir -p opt/fsl-6.0.5.1/bin \
+    && touch /opt/fsl-6.0.5.1/bin/eddy_cuda10.2
 
 FROM ${FSL_BUILD} as this-fsl
 
