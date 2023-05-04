@@ -225,6 +225,12 @@ ENV \
 
 WORKDIR /root/
 
+# RUN if [ $FSL_BUILD == "build_fsl" ]; then \
+#     mkdir -p /tmp/src \
+#     && cd /tmp/src \
+#     && wget https://git.fmrib.ox.ac.uk/matteob/eddy_qc_release/-/archive/master/eddy_qc_release-master.zip \
+#     && unzip eddy_qc_release-master.zip
+
 # Precaching atlases
 ADD docker/scripts/get_templates.sh get_templates.sh
 RUN mkdir $CRN_SHARED_DATA && \
