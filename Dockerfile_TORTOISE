@@ -33,7 +33,7 @@ RUN \
   && ./b2 install
 
 
-ARG TORTOISE_SHA=6e2d06c6e3ef1a8d674dd717bf644eeb2e08ae43
+ARG TORTOISE_SHA=9fb5296649ef6de802fde25cca4cb2893a94c64d
 RUN \
   cd /src \
   && git clone https://github.com/eurotomania/TORTOISEV4.git \
