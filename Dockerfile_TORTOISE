@@ -25,9 +25,9 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
 RUN \
   mkdir /src \
   && cd /src \
-  && wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz \
-  && tar -xvf boost_1_76_0.tar.gz \
-  && cd boost_1_76_0 \
+  && wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz \
+  && tar -xvf boost_1_77_0.tar.gz \
+  && cd boost_1_77_0 \
   && ln -s /usr/bin/g++-9 /usr/bin/g++ \
   && ./bootstrap.sh --with-libraries=iostreams,filesystem,system,regex --prefix=/usr/local/boost176 \
   && ./b2 install
