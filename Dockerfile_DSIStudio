@@ -17,16 +17,31 @@ RUN apt update && apt full-upgrade -y && \
   qt512charts-no-lgpl \
   mesa-common-dev \
   libglu1-mesa-dev \
-  gcc \
-  g++ && \
+  gcc-9 \
+  g++-9 && \
   apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 \
+                    99 \
+                    --slave   /usr/bin/cc cc /usr/bin/gcc-9 \
+                    --slave   /usr/bin/c++ c++ /usr/bin/g++-9 \
+                    --slave   /usr/bin/g++ g++ /usr/bin/g++-9 \
+                    --slave   /usr/bin/gcov gcov /usr/bin/gcov-9 \
+                    --slave   /usr/bin/gcov-dump gcov-dump /usr/bin/gcov-dump-9 \
+                    --slave   /usr/bin/gcov-tool gcov-tool /usr/bin/gcov-tool-9 \
+                    --slave   /usr/bin/gcc-ar gcc-ar /usr/bin/gcc-ar-9 \
+                    --slave   /usr/bin/gcc-nm gcc-nm /usr/bin/gcc-nm-9 \
+                    --slave   /usr/bin/gcc-ranlib gcc-ranlib /usr/bin/gcc-ranlib-9
+
+RUN update-alternatives --auto gcc
 
 #Need to use a different shell so the QT ENV script works
 SHELL ["/bin/bash", "-c"]
 ENV PATH="$PATH:/opt/qt512/bin"
 
-ARG DSI_SHA=eb8433e8923d4bb26bd6ee04d0da4bdede55ed85
-ARG TIPL_SHA=f94d2df66acba0fa929351a0a2bdfaa40faf66e8
+ARG DSI_SHA=94b9c799c8422028974503b9346ffe8833c4fcb2
+ARG TIPL_SHA=6938d841b48e5f9e5741fb33c37d2607432e0da7
+
 RUN source /opt/qt512/bin/qt512-env.sh \
   && mkdir /opt/dsi-studio \
   && cd /opt/dsi-studio \
@@ -36,14 +51,18 @@ RUN source /opt/qt512/bin/qt512-env.sh \
   && rm -rf ${DSI_SHA}.zip \
   && curl -sSLO https://github.com/frankyeh/TIPL/archive/${TIPL_SHA}.zip \
   && unzip ${TIPL_SHA}.zip \
-  && mv TIPL-${TIPL_SHA} src/tipl \
+  && mv TIPL-${TIPL_SHA} src/TIPL \
   && rm ${TIPL_SHA}.zip \
   && mkdir build && cd build \
-  && qmake ../src && make -j 1 \
-  && cd /opt/dsi-studio \
-  && curl -sSLO 'https://upenn.box.com/shared/static/01r73d4a15utl13himv4d7cjpa6etf6z.gz' \
-  && tar xvfz 01r73d4a15utl13himv4d7cjpa6etf6z.gz \
-  && rm 01r73d4a15utl13himv4d7cjpa6etf6z.gz \
-  && cd dsi_studio_64 \
+  && qmake ../src && make -j 1
+
+ARG ATLAS_SHA=e2e00a8a09cf735c1e6018c258f239586bd77d68
+
+RUN mkdir -p /opt/dsi-studio/dsi_studio_64 \
+  && cd /opt/dsi-studio/dsi_studio_64 \
+  && curl -sSLO https://github.com/frankyeh/DSI-Studio-atlas/archive/${ATLAS_SHA}.zip \
+  && unzip ${ATLAS_SHA}.zip \
+  && mv DSI-Studio-atlas-${ATLAS_SHA} atlas \
+  && rm ${ATLAS_SHA}.zip \
   && mv ../build/dsi_studio . \
   && rm -rf /opt/dsi-studio/src /opt/dsi-studio/build
