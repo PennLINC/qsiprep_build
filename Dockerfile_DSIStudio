@@ -39,8 +39,8 @@ RUN update-alternatives --auto gcc
 SHELL ["/bin/bash", "-c"]
 ENV PATH="$PATH:/opt/qt512/bin"
 
-ARG DSI_SHA=94b9c799c8422028974503b9346ffe8833c4fcb2
-ARG TIPL_SHA=6938d841b48e5f9e5741fb33c37d2607432e0da7
+ARG DSI_SHA=8118e168f096c897dcc40f9ecc3ba72b1925cb7d
+ARG TIPL_SHA=485a9b140ee4544a1e9c9c084b9d1012ff0b1523
 
 RUN source /opt/qt512/bin/qt512-env.sh \
   && mkdir /opt/dsi-studio \
