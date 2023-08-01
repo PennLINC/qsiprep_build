@@ -108,8 +108,6 @@ COPY --from=build_miniconda /usr/local/miniconda /usr/local/miniconda
 COPY --from=build_miniconda /home/qsiprep/.dipy /home/qsiprep/.dipy
 ENV PATH="/usr/local/miniconda/bin:$PATH"
 
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
-
 RUN apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
            apt-utils \
