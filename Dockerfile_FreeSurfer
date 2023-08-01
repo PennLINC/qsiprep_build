@@ -1,5 +1,5 @@
 FROM freesurfer/freesurfer:7.3.1 as freesurfer
-FROM nvidia/cuda:10.2-runtime-ubuntu18.04
+FROM ubuntu:18.04
 ARG TAG_ANTS
 
 COPY --from=freesurfer \

@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.2-runtime-ubuntu18.04 as base
+FROM ubuntu:18.04 as base
 ARG TAG_ANTS
 FROM base as builder
 

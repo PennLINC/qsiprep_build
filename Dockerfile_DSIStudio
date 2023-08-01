@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.2-runtime-ubuntu18.04
+FROM ubuntu:18.04
 ARG TAG_ANTS
 
 RUN apt update && apt full-upgrade -y && \

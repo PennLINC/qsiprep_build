@@ -22,16 +22,16 @@ FROM pennbbl/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
 FROM pennbbl/qsiprep-miniconda:${TAG_MINICONDA} as build_miniconda
 FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
-FROM nvidia/cuda:10.2-runtime-ubuntu18.04 as cuda10
+FROM ubuntu:18.04 as ubuntu
 
 # Make a dummy fsl image containing no FSL
-FROM cuda10 as no_fsl
+FROM ubuntu as no_fsl
 RUN mkdir -p opt/fsl-6.0.5.1/bin \
     && touch /opt/fsl-6.0.5.1/bin/eddy_cuda10.2
 
 FROM ${FSL_BUILD} as this-fsl
 
-FROM cuda10
+FROM ubuntu
 ## FSL
 COPY --from=this-fsl /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
 ENV FSLDIR="/opt/fsl-6.0.5.1" \
