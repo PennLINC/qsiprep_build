@@ -22,6 +22,7 @@ FROM pennbbl/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
 FROM pennbbl/qsiprep-miniconda:${TAG_MINICONDA} as build_miniconda
 FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
+FROM pennlinc/atlaspack:0.1.0 as atlaspack
 FROM ubuntu:18.04 as ubuntu
 
 # Make a dummy fsl image containing no FSL
@@ -200,6 +201,14 @@ ENV PATH="/opt/art/bin:$PATH"
 RUN cd /opt/art \
     && curl -fsSL https://osf.io/73h5s/download \
     | tar xz --strip-components 1
+
+# Download atlases from AtlasPack
+RUN mkdir /AtlasPack
+COPY --from=atlaspack /AtlasPack/tpl-fsLR_*.dlabel.nii /AtlasPack/
+COPY --from=atlaspack /AtlasPack/tpl-MNI152NLin6Asym_*.nii.gz /AtlasPack/
+COPY --from=atlaspack /AtlasPack/tpl-MNI152NLin2009cAsym_*.nii.gz /AtlasPack/
+COPY --from=atlaspack /AtlasPack/atlas-4S*.tsv /AtlasPack/
+COPY --from=atlaspack /AtlasPack/*.json /AtlasPack/
 
 # Create a shared $HOME directory
 RUN useradd -m -s /bin/bash -G users qsiprep
