@@ -167,7 +167,7 @@ ENV C3DPATH="/opt/convert3d-nightly" \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         zlib1g-dev graphviz libfftw3-3 && \
-    curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
+    curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt-get install -y --no-install-recommends \
       nodejs && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
