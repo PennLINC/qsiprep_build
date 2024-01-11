@@ -222,6 +222,18 @@ ENV \
     LD_LIBRARY_PATH=$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH \
     PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
+## Install cudart and cublas for eddy_cuda
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.1-1_all.deb \
+  && dpkg -i cuda-keyring_1.1-1_all.deb \
+  && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-license-10-2_10.2.89-1_amd64.deb \
+  && dpkg -i cuda cuda-license-10-2_10.2.89-1_amd64.deb \
+  && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-cudart-10-2_10.2.89-1_amd64.deb \
+  && dpkg -i cuda-cudart-10-2_10.2.89-1_amd64.deb \
+  && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/libcublas10_10.2.3.254-1_amd64.deb \
+  && dpkg -i libcublas10_10.2.3.254-1_amd64.deb \
+  && rm *.deb \
+  && ldconfig
+
 WORKDIR /root/
 
 # RUN if [ $FSL_BUILD == "build_fsl" ]; then \
