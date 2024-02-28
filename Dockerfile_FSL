@@ -28,9 +28,9 @@ RUN apt-get update && \
     wget
 
 RUN echo "Downloading FSL ..." \
-      && mkdir -p /opt/fsl-6.0.5.1 \
-      && curl -fsSL --retry 5 https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5.1-centos7_64.tar.gz \
-      | tar -xz -C /opt/fsl-6.0.5.1 --strip-components 1 \
+      && mkdir -p /opt/fsl-6.0.7.8 \
+      && curl -fsSL --retry 5 https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.7.8-centos7_64.tar.gz \
+      | tar -xz -C /opt/fsl-6.0.7.8 --strip-components 1 \
       --exclude='fsl/doc' \
       --exclude='fsl/data/possum' \
       --exclude='fsl/src' \
@@ -41,7 +41,7 @@ RUN echo "Downloading FSL ..." \
       --exclude 'fsl/etc/default_flobs.flobs' \
       --exclude 'fsl/refdoc' \
       --exclude 'fsl/tcl' \
-    && cd /opt/fsl-6.0.5.1/bin \
+    && cd /opt/fsl-6.0.7.8/bin \
     && rm \
         AnatomicalAverage \
         ApplyXFM \
@@ -254,12 +254,12 @@ RUN echo "Downloading FSL ..." \
         xtract_stats \
         xtract_viewer \
         ztop \
-    && cd /opt/fsl-6.0.5.1 \
+    && cd /opt/fsl-6.0.7.8 \
     && rm -rf \
         extras \
         python \
         data/xtract_data \
-    && cd /opt/fsl-6.0.5.1/lib \
+    && cd /opt/fsl-6.0.7.8/lib \
     && rm \
         libOSMesa.so \
         libOSMesa.so.6 \
@@ -381,7 +381,7 @@ RUN echo "Downloading FSL ..." \
         libopenblasp64_-r0.3.3.so \
         libopenblasp64_.so \
         libopenblasp64_.so.0 \
-    && cd /opt/fsl-6.0.5.1/data \
+    && cd /opt/fsl-6.0.7.8/data \
     && rm \
         atlases/Cerebellum/Cerebellum-MNIflirt-maxprob-thr0-1mm.nii.gz \
         atlases/Cerebellum/Cerebellum-MNIflirt-maxprob-thr0-2mm.nii.gz \
@@ -574,7 +574,7 @@ RUN echo "Downloading FSL ..." \
 
 
 # Get fsl_sub
-RUN cd /opt/fsl-6.0.5.1/bin \
+RUN cd /opt/fsl-6.0.7.8/bin \
     && wget https://raw.githubusercontent.com/neurolabusc/fsl_sub/master/fsl_sub \
     && chmod a+rx fsl_sub
 
