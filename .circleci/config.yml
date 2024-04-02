@@ -7,7 +7,7 @@ build: &build
   steps:
     - checkout
     - setup_remote_docker:
-        version: 19.03.13
+        version: docker24
     - run:
         name: Check whether build should be skipped
         command: |
@@ -125,7 +125,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-         version: 19.03.12
+         version: docker24
 
       - run:
           name: Build with FSL and push
@@ -147,7 +147,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-         version: 19.03.12
+         version: docker24
 
       - run:
           name: Build without FSL and push
