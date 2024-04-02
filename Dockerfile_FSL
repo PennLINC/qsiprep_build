@@ -9,39 +9,29 @@ RUN apt-get update && \
     ca-certificates \
     curl \
     dc \
-    file \
-    libfontconfig1 \
-    libfreetype6 \
-    libgl1-mesa-dev \
-    libgl1-mesa-dri \
-    libglu1-mesa-dev \
-    libgomp1 \
-    libice6 \
-    libopenblas-base \
-    libxcursor1 \
-    libxft2 \
-    libxinerama1 \
-    libxrandr2 \
-    libxrender1 \
-    libxt6 \
     sudo \
+    python3 \
     wget
 
-RUN echo "Downloading FSL ..." \
-      && mkdir -p /opt/fsl-6.0.7.8 \
-      && curl -fsSL --retry 5 https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.7.8-centos7_64.tar.gz \
-      | tar -xz -C /opt/fsl-6.0.7.8 --strip-components 1 \
-      --exclude='fsl/doc' \
-      --exclude='fsl/data/possum' \
-      --exclude='fsl/src' \
-      --exclude='fsl/bin/fslview*' \
-      --exclude='fsl/bin/FSLeyes' \
-      --exclude 'fsl/data/standard/bianca' \
-      --exclude 'fsl/doc' \
-      --exclude 'fsl/etc/default_flobs.flobs' \
-      --exclude 'fsl/refdoc' \
-      --exclude 'fsl/tcl' \
-    && cd /opt/fsl-6.0.7.8/bin \
+RUN wget https://fsl.fmrib.ox.ac.uk/fsldownloads/fslconda/releases/fslinstaller.py
+RUN python3 fslinstaller.py --skip_registration --fslversion 6.0.7.9 --dest /usr/local/fsl/
+RUN cd /usr/local/fsl \
+      && rm -rf \
+      doc \
+      data/possum \
+      src \
+      bin/fslview* \
+      bin/FSLeyes \
+      data/standard/bianca \
+      doc \
+      etc/default_flobs.flobs \
+      refdoc \
+      tcl \
+      extras \
+      python \
+      data/xtract_data
+
+RUN cd /usr/local/fsl/bin \
     && rm \
         AnatomicalAverage \
         ApplyXFM \
@@ -89,14 +79,12 @@ RUN echo "Downloading FSL ..." \
         cluster2html \
         connectedcomp \
         contrast_mgr \
-        create_blueprint.py \
         cutoffcalc \
         design_ttest2 \
         distancemap \
         drawmesh \
         dual_regression \
         easythresh \
-        estimate_metric_distortion \
         estnoise \
         fabber \
         fabber_asl \
@@ -127,10 +115,10 @@ RUN echo "Downloading FSL ..." \
         fsl_deface \
         fsl_gen_3D \
         fsl_glm \
-        fsl_gui \
         fsl_histogram \
         fsl_motion_outliers \
         fsl_mvlm \
+        fsl_mrs* \
         fsl_reg \
         fsl_regfilt \
         fsl_sbca \
@@ -180,11 +168,9 @@ RUN echo "Downloading FSL ..." \
         msmapplywarp \
         msmresample \
         mvntool \
-        new_invwarp \
         old_betall \
         overlay \
         oxford_asl \
-        oxford_asl_roi_stats.py \
         perfusion_subtract \
         pnm_evs \
         pnm_stage1 \
@@ -231,7 +217,6 @@ RUN echo "Downloading FSL ..." \
         surf2volume \
         surf_proj \
         surface_fdr \
-        surfconvert \
         surfmaths \
         susan \
         swap_subjectwise \
@@ -253,135 +238,16 @@ RUN echo "Downloading FSL ..." \
         xtract_blueprint \
         xtract_stats \
         xtract_viewer \
-        ztop \
-    && cd /opt/fsl-6.0.7.8 \
-    && rm -rf \
-        extras \
-        python \
-        data/xtract_data \
-    && cd /opt/fsl-6.0.7.8/lib \
+        ztop
+
+RUN cd /usr/local/fsl/lib \
     && rm \
-        libOSMesa.so \
-        libOSMesa.so.6 \
-        libOSMesa.so.6.5.1 \
-        libOSMesa16.so \
-        libOSMesa16.so.6 \
-        libOSMesa16.so.6.5.1 \
-        libOSMesa32.so \
-        libOSMesa32.so.6 \
-        libOSMesa32.so.6.5.1 \
-        libQVTK.so \
-        libQVTK.so.5.0 \
-        libQVTK.so.5.0.3 \
-        libfabber_models_asl.a \
-        libfabber_models_cest.a \
-        libfabber_models_dsc.a \
-        libfabber_models_dualecho.a \
-        libfabber_models_qbold.a \
-        libfabber_models_t1.a \
-        libfabbercore.a \
-        libfabberexec.a \
-        libfabbermodels_dce.a \
-        libfabbermodels_dwi.a \
-        libfabbermodels_pet.a \
-        libmiscpic.a \
-        libmiscplot.a \
-        libqt-mt.so \
-        libqt-mt.so.3 \
-        libqwt.so \
-        libqwt.so.4 \
-        libqwt.so.4.2 \
-        libqwt.so.4.2.0 \
-        libvtkCommon.so \
-        libvtkCommon.so.5.0 \
-        libvtkCommon.so.5.0.3 \
-        libvtkDICOMParser.so \
-        libvtkDICOMParser.so.5.0 \
-        libvtkDICOMParser.so.5.0.3 \
-        libvtkFiltering.so \
-        libvtkFiltering.so.5.0 \
-        libvtkFiltering.so.5.0.3 \
-        libvtkGenericFiltering.so \
-        libvtkGenericFiltering.so.5.0 \
-        libvtkGenericFiltering.so.5.0.3 \
-        libvtkGraphics.so \
-        libvtkGraphics.so.5.0 \
-        libvtkGraphics.so.5.0.3 \
-        libvtkHybrid.so \
-        libvtkHybrid.so.5.0 \
-        libvtkHybrid.so.5.0.3 \
-        libvtkIO.so \
-        libvtkIO.so.5.0 \
-        libvtkIO.so.5.0.3 \
-        libvtkImaging.so \
-        libvtkImaging.so.5.0 \
-        libvtkImaging.so.5.0.3 \
-        libvtkNetCDF.so \
-        libvtkNetCDF.so.5.0 \
-        libvtkNetCDF.so.5.0.3 \
-        libvtkRendering.so \
-        libvtkRendering.so.5.0 \
-        libvtkRendering.so.5.0.3 \
-        libvtkVolumeRendering.so \
-        libvtkVolumeRendering.so.5.0 \
-        libvtkVolumeRendering.so.5.0.3 \
-        libvtkWidgets.so \
-        libvtkWidgets.so.5.0 \
-        libvtkWidgets.so.5.0.3 \
-        libvtkexoIIc.so \
-        libvtkexoIIc.so.5.0 \
-        libvtkexoIIc.so.5.0.3 \
-        libvtkexpat.so \
-        libvtkexpat.so.5.0 \
-        libvtkexpat.so.5.0.3 \
-        libvtkfreetype.so \
-        libvtkfreetype.so.5.0 \
-        libvtkfreetype.so.5.0.3 \
-        libvtkftgl.so \
-        libvtkftgl.so.5.0 \
-        libvtkftgl.so.5.0.3 \
-        libvtkjpeg.so \
-        libvtkjpeg.so.5.0 \
-        libvtkjpeg.so.5.0.3 \
-        libvtkpng.so \
-        libvtkpng.so.5.0 \
-        libvtkpng.so.5.0.3 \
-        libvtksys.so \
-        libvtksys.so.5.0 \
-        libvtksys.so.5.0.3 \
-        libvtktiff.so \
-        libvtktiff.so.5.0 \
-        libvtktiff.so.5.0.3 \
-        libvtkzlib.so \
-        libvtkzlib.so.5.0 \
-        libvtkzlib.so.5.0.3 \
-        libopenblas-r0.3.3.so \
-        libopenblas.so \
-        libopenblas64-r0.3.3.so \
-        libopenblas64.so \
-        libopenblas64.so.0 \
-        libopenblas64_-r0.3.3.so \
-        libopenblas64_.so \
-        libopenblas64_.so.0 \
-        libopenblaso-r0.3.3.so \
-        libopenblaso.so \
-        libopenblaso.so.0 \
-        libopenblaso64-r0.3.3.so \
-        libopenblaso64.so \
-        libopenblaso64.so.0 \
-        libopenblaso64_-r0.3.3.so \
-        libopenblaso64_.so \
-        libopenblaso64_.so.0 \
-        libopenblasp-r0.3.3.so \
-        libopenblasp.so \
-        libopenblasp.so.0 \
-        libopenblasp64-r0.3.3.so \
-        libopenblasp64.so \
-        libopenblasp64.so.0 \
-        libopenblasp64_-r0.3.3.so \
-        libopenblasp64_.so \
-        libopenblasp64_.so.0 \
-    && cd /opt/fsl-6.0.7.8/data \
+        *VTK* \
+        *fabber* \
+        libvtk* \
+        libopenblas*
+
+RUN cd /usr/local/fsl/data \
     && rm \
         atlases/Cerebellum/Cerebellum-MNIflirt-maxprob-thr0-1mm.nii.gz \
         atlases/Cerebellum/Cerebellum-MNIflirt-maxprob-thr0-2mm.nii.gz \
@@ -571,10 +437,3 @@ RUN echo "Downloading FSL ..." \
         standard/MNI152_T1_2mm_skull.nii.gz \
         standard/MNI152_T1_2mm_strucseg.nii.gz \
         standard/MNI152_T1_2mm_strucseg_periph.nii.gz
-
-
-# Get fsl_sub
-RUN cd /opt/fsl-6.0.7.8/bin \
-    && wget https://raw.githubusercontent.com/neurolabusc/fsl_sub/master/fsl_sub \
-    && chmod a+rx fsl_sub
-
