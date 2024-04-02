@@ -27,23 +27,23 @@ FROM ubuntu:18.04 as ubuntu
 
 # Make a dummy fsl image containing no FSL
 FROM ubuntu as no_fsl
-RUN mkdir -p opt/fsl-6.0.5.1/bin \
-    && touch /opt/fsl-6.0.5.1/bin/eddy_cuda10.2
+RUN mkdir -p /opt/fsl-6.0.7.9/bin \
+    && touch /opt/fsl-6.0.7.9/bin/eddy_cuda10.2
 
 FROM ${FSL_BUILD} as this-fsl
 
 FROM ubuntu
 ## FSL
-COPY --from=this-fsl /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
-ENV FSLDIR="/opt/fsl-6.0.5.1" \
+COPY --from=this-fsl /usr/local/fsl /opt/fsl-6.0.7.9
+ENV FSLDIR="/opt/fsl-6.0.7.9" \
     FSLOUTPUTTYPE="NIFTI_GZ" \
     FSLMULTIFILEQUIT="TRUE" \
     FSLLOCKDIR="" \
     FSLMACHINELIST="" \
     FSLREMOTECALL="" \
     FSLGECUDAQ="cuda.q" \
-    LD_LIBRARY_PATH="/opt/fsl-6.0.5.1/lib:$LD_LIBRARY_PATH" \
-    PATH="/opt/fsl-6.0.5.1/bin:$PATH" \
+    LD_LIBRARY_PATH="/opt/fsl-6.0.7.9/lib:$LD_LIBRARY_PATH" \
+    PATH="/opt/fsl-6.0.7.9/bin:$PATH" \
     FSL_DEPS="libquadmath0" \
     FSL_BUILD="${FSL_BUILD}"
 
@@ -72,7 +72,7 @@ ENV PATH="$PATH:/opt/mrtrix3-latest/bin:/opt/3Tissue/bin" \
 ## Freesurfer
 COPY --from=build_freesurfer /opt/freesurfer /opt/freesurfer
 # Simulate SetUpFreeSurfer.sh
-ENV FSL_DIR="/opt/fsl-6.0.5.1" \
+ENV FSL_DIR="/opt/fsl-6.0.7.9" \
     OS="Linux" \
     FS_OVERRIDE=0 \
     FIX_VERTEX_AREA="" \
@@ -257,7 +257,7 @@ RUN mkdir $CRN_SHARED_DATA && \
     /root/get_templates.sh && \
     chmod -R a+rX $CRN_SHARED_DATA
 
-RUN ln -s /opt/fsl-6.0.5.1/bin/eddy_cuda10.2 /opt/fsl-6.0.5.1/bin/eddy_cuda
+RUN ln -s /opt/fsl-6.0.7.9/bin/eddy_cuda10.2 /opt/fsl-6.0.7.9/bin/eddy_cuda
 # Make it ok for singularity on CentOS
 RUN strip --remove-section=.note.ABI-tag /opt/qt512/lib/libQt5Core.so.5.12.8 \
     && ldconfig
