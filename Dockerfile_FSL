@@ -244,8 +244,7 @@ RUN cd /usr/local/fsl/lib \
     && rm \
         *VTK* \
         *fabber* \
-        libvtk* \
-        libopenblas*
+        libvtk*
 
 RUN cd /usr/local/fsl/data \
     && rm \

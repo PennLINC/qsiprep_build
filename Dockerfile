@@ -27,8 +27,8 @@ FROM ubuntu:18.04 as ubuntu
 
 # Make a dummy fsl image containing no FSL
 FROM ubuntu as no_fsl
-RUN mkdir -p /opt/fsl-6.0.7.9/bin \
-    && touch /opt/fsl-6.0.7.9/bin/eddy_cuda10.2
+RUN mkdir -p /usr/local/fsl/bin \
+    && touch /usr/local/fsl/bin/eddy_cuda10.2
 
 FROM ${FSL_BUILD} as this-fsl
 
@@ -42,7 +42,6 @@ ENV FSLDIR="/opt/fsl-6.0.7.9" \
     FSLMACHINELIST="" \
     FSLREMOTECALL="" \
     FSLGECUDAQ="cuda.q" \
-    LD_LIBRARY_PATH="/opt/fsl-6.0.7.9/lib:$LD_LIBRARY_PATH" \
     PATH="/opt/fsl-6.0.7.9/bin:$PATH" \
     FSL_DEPS="libquadmath0" \
     FSL_BUILD="${FSL_BUILD}"
@@ -50,14 +49,12 @@ ENV FSLDIR="/opt/fsl-6.0.7.9" \
 ## ANTs
 COPY --from=build_ants /opt/ants /opt/ants
 ENV ANTSPATH="/opt/ants/bin" \
-    LD_LIBRARY_PATH="/opt/ants/lib:$LD_LIBRARY_PATH" \
     PATH="$PATH:/opt/ants/bin" \
     ANTS_DEPS="zlib1g-dev"
 
 ## DSI Studio
 ENV QT_BASE_DIR="/opt/qt512"
 ENV QTDIR="$QT_BASE_DIR" \
-    LD_LIBRARY_PATH="$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" \
     PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
     PATH="$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio/dsi_studio_64" \
     DSI_STUDIO_DEPS="qt512base qt512charts-no-lgpl"
@@ -108,6 +105,7 @@ ENV PATH="$PATH:/src/TORTOISEV4/bin" \
 COPY --from=build_miniconda /usr/local/miniconda /usr/local/miniconda
 COPY --from=build_miniconda /home/qsiprep/.dipy /home/qsiprep/.dipy
 ENV PATH="/usr/local/miniconda/bin:$PATH"
+
 
 RUN apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
@@ -228,7 +226,6 @@ ENV \
     DIPY_HOME=/home/qsiprep/.dipy \
     QTDIR=$QT_BASE_DIR \
     PATH=$QT_BASE_DIR/bin:$PATH \
-    LD_LIBRARY_PATH=$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH \
     PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
 ## Install cudart and cublas for eddy_cuda
@@ -280,3 +277,5 @@ RUN  mkdir -p /sngl/data \
   && mkdir /sngl/eddy \
   && mkdir /sngl/filter \
   && chmod a+rwx /sngl/*
+
+ENV LD_LIBRARY_PATH="/opt/fsl-6.0.7.9/lib:$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:/opt/ants/lib:$LD_LIBRARY_PATH"
