@@ -1,0 +1,30 @@
+FROM ubuntu:jammy-20240125
+ARG TAG_ANTS
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    ca-certificates \
+    curl \
+    wget \
+    bzip2
+
+WORKDIR /
+RUN echo "2024.02.06"
+RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+
+ENV MAMBA_ROOT_PREFIX="/opt/conda" \
+MAMBA_NO_LOW_SPEED_LIMIT=1
+COPY fsl.yml /tmp/fsl.yml
+WORKDIR /tmp
+RUN micromamba create -y -f /tmp/fsl.yml
+RUN micromamba clean -y -a
+
+
+# RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb \
+#   && dpkg -i cuda-keyring_1.1-1_all.deb \
+#   && apt-get update \
+#   && apt-get install -y \
+#         libcublas-11-7 \
+#         cuda-cudart-11-7 \

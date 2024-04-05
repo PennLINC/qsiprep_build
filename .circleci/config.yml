@@ -56,7 +56,7 @@ jobs:
     environment:
       VERSION_TAG: "TAG_FSL"
       IMG_NAME: "qsiprep-fsl"
-      BUILD_FILE: "Dockerfile_FSL"
+      BUILD_FILE: "Dockerfile_FSLconda"
     <<: *build
 
   build_FreeSurfer:

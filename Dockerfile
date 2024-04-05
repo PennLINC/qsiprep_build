@@ -27,22 +27,22 @@ FROM ubuntu:18.04 as ubuntu
 
 # Make a dummy fsl image containing no FSL
 FROM ubuntu as no_fsl
-RUN mkdir -p /usr/local/fsl/bin \
-    && touch /usr/local/fsl/bin/eddy_cuda10.2
+RUN mkdir -p /opt/conda/envs/fslqsiprep \
+    && touch /opt/conda/envs/fslqsiprep/bin/eddy_cuda10.2
 
 FROM ${FSL_BUILD} as this-fsl
 
 FROM ubuntu
 ## FSL
-COPY --from=this-fsl /usr/local/fsl /opt/fsl-6.0.7.9
-ENV FSLDIR="/opt/fsl-6.0.7.9" \
+COPY --from=this-fsl /opt/conda/envs/fslqsiprep /opt/conda/envs/fslqsiprep
+ENV FSLDIR="/opt/conda/envs/fslqsiprep" \
     FSLOUTPUTTYPE="NIFTI_GZ" \
     FSLMULTIFILEQUIT="TRUE" \
     FSLLOCKDIR="" \
     FSLMACHINELIST="" \
     FSLREMOTECALL="" \
     FSLGECUDAQ="cuda.q" \
-    PATH="/opt/fsl-6.0.7.9/bin:$PATH" \
+    PATH="/opt/conda/envs/fslqsiprep/bin:$PATH" \
     FSL_DEPS="libquadmath0" \
     FSL_BUILD="${FSL_BUILD}"
 
@@ -187,11 +187,6 @@ RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
 
-# Install gcc-9
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends libstdc++6 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install ACPC-detect
 WORKDIR /opt/art
@@ -227,20 +222,6 @@ ENV \
     QTDIR=$QT_BASE_DIR \
     PATH=$QT_BASE_DIR/bin:$PATH \
     PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
-
-## Install cudart and cublas for eddy_cuda
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.1-1_all.deb \
-  && dpkg -i cuda-keyring_1.1-1_all.deb \
-  && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-license-10-2_10.2.89-1_amd64.deb \
-  && dpkg -i cuda-license-10-2_10.2.89-1_amd64.deb \
-  && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-cudart-10-2_10.2.89-1_amd64.deb \
-  && dpkg -i cuda-cudart-10-2_10.2.89-1_amd64.deb \
-  && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/libcublas10_10.2.3.254-1_amd64.deb \
-  && dpkg -i libcublas10_10.2.3.254-1_amd64.deb \
-  && rm *.deb \
-  && ldconfig
-
-WORKDIR /root/
 
 # RUN if [ $FSL_BUILD == "build_fsl" ]; then \
 #     mkdir -p /tmp/src \

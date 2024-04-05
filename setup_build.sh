@@ -10,10 +10,10 @@ export BUILD_TAG
 # Versions of the components
 export TAG_FSL=24.4.4
 export TAG_FREESURFER=23.3.0
-export TAG_ANTS=23.2.0
-export TAG_MRTRIX3=22.1.0
-export TAG_3TISSUE=22.1.0
-export TAG_DSISTUDIO=24.4.0
+export TAG_ANTS=24.4.5
+export TAG_MRTRIX3=24.4.5
+export TAG_3TISSUE=24.4.5
+export TAG_DSISTUDIO=24.4.5
 export TAG_MINICONDA=24.1.0
 export TAG_AFNI=23.3.2
 export TAG_TORTOISE=23.5.5

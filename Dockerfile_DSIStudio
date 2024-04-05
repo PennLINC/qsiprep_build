@@ -1,49 +1,36 @@
-FROM ubuntu:18.04
+# Portions of this code are from the original DSI Studio build files
+FROM ubuntu:jammy-20240125
 ARG TAG_ANTS
 
-RUN apt update && apt full-upgrade -y && \
-  apt install --no-install-recommends -y software-properties-common && \
-  add-apt-repository -y ppa:beineri/opt-qt-5.12.8-bionic && \
-  add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
-  apt install -y --no-install-recommends \
+ENV DEBIAN_FRONTEND noninteractive
+
+# Prepare environment
+RUN apt update && apt upgrade -y && \
+  apt install -y \
   unzip \
   curl \
-  make \
   git \
-  libboost-all-dev \
   zlib1g-dev \
-  ca-certificates \
-  qt512base \
-  qt512charts-no-lgpl \
-  mesa-common-dev \
   libglu1-mesa-dev \
-  gcc-9 \
-  g++-9 && \
-  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+  qt6-base-dev \
+  libqt6charts6-dev \
+  libqt6opengl6-dev \
+  qt6-image-formats-plugins \
+  gcc-11 \
+  g++-11 && \
+  apt-get -y autoremove --purge && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 \
-                    99 \
-                    --slave   /usr/bin/cc cc /usr/bin/gcc-9 \
-                    --slave   /usr/bin/c++ c++ /usr/bin/g++-9 \
-                    --slave   /usr/bin/g++ g++ /usr/bin/g++-9 \
-                    --slave   /usr/bin/gcov gcov /usr/bin/gcov-9 \
-                    --slave   /usr/bin/gcov-dump gcov-dump /usr/bin/gcov-dump-9 \
-                    --slave   /usr/bin/gcov-tool gcov-tool /usr/bin/gcov-tool-9 \
-                    --slave   /usr/bin/gcc-ar gcc-ar /usr/bin/gcc-ar-9 \
-                    --slave   /usr/bin/gcc-nm gcc-nm /usr/bin/gcc-nm-9 \
-                    --slave   /usr/bin/gcc-ranlib gcc-ranlib /usr/bin/gcc-ranlib-9
 
-RUN update-alternatives --auto gcc
-
-#Need to use a different shell so the QT ENV script works
-SHELL ["/bin/bash", "-c"]
-ENV PATH="$PATH:/opt/qt512/bin"
+# install updated cmake
+RUN curl -fsSL https://apt.kitware.com/kitware-archive.sh | bash
+RUN apt install -y --no-install-recommends cmake ninja-build
 
 ARG DSI_SHA=b7b1f10d6c9599983352050a923a10da4888a30c
 ARG TIPL_SHA=3e2a371f47a994d162055675617d7488895eca2a
+ARG ATLAS_SHA=e4c2549c42f1858913de7269eac827cc64ae3d29
+ARG UNET_SHA=68621730186b9ac18d4610324aecfb7b9196a9fb
 
-RUN source /opt/qt512/bin/qt512-env.sh \
-  && mkdir /opt/dsi-studio \
+RUN mkdir /opt/dsi-studio \
   && cd /opt/dsi-studio \
   && curl -sSLO https://github.com/frankyeh/DSI-Studio/archive/${DSI_SHA}.zip \
   && unzip ${DSI_SHA}.zip \
@@ -52,17 +39,25 @@ RUN source /opt/qt512/bin/qt512-env.sh \
   && curl -sSLO https://github.com/frankyeh/TIPL/archive/${TIPL_SHA}.zip \
   && unzip ${TIPL_SHA}.zip \
   && mv TIPL-${TIPL_SHA} src/TIPL \
-  && rm ${TIPL_SHA}.zip \
-  && mkdir build && cd build \
-  && qmake ../src && make -j 1
+  && rm ${TIPL_SHA}.zip
 
-ARG ATLAS_SHA=e2e00a8a09cf735c1e6018c258f239586bd77d68
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+RUN cd /opt/dsi-studio/src \
+  && cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE:STRING=Release -DTIPL_DIR=. \
+  && cmake --build ./build --parallel --config Release
 
-RUN mkdir -p /opt/dsi-studio/dsi_studio_64 \
-  && cd /opt/dsi-studio/dsi_studio_64 \
+RUN cd /opt/dsi-studio \
+  && mv src/build/dsi_studio . \
+  && chmod 755 dsi_studio \
+  && cp -R src/other/* . \
+  && rm -rf src \
+  && curl -sSLO https://github.com/frankyeh/UNet-Studio-Data/archive/${UNET_SHA}.zip \
+  && unzip ${UNET_SHA}.zip \
+  && rm ${UNET_SHA}.zip \
+  && mv UNet-Studio-Data-${UNET_SHA}/network/ . \
+  && rm -rf mv UNet-Studio-Data-${UNET_SHA} \
   && curl -sSLO https://github.com/frankyeh/DSI-Studio-atlas/archive/${ATLAS_SHA}.zip \
   && unzip ${ATLAS_SHA}.zip \
+  && rm -rf DSI-Studio-atlas-${ATLAS_SHA}/.git \
   && mv DSI-Studio-atlas-${ATLAS_SHA} atlas \
-  && rm ${ATLAS_SHA}.zip \
-  && mv ../build/dsi_studio . \
-  && rm -rf /opt/dsi-studio/src /opt/dsi-studio/build
+  && rm ${ATLAS_SHA}.zip
