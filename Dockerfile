@@ -23,7 +23,7 @@ FROM pennbbl/qsiprep-miniconda:${TAG_MINICONDA} as build_miniconda
 FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
 FROM pennlinc/atlaspack:0.1.0 as atlaspack
-FROM ubuntu:18.04 as ubuntu
+FROM ubuntu:jammy-20240125 as ubuntu
 
 # Make a dummy fsl image containing no FSL
 FROM ubuntu as no_fsl
@@ -53,11 +53,8 @@ ENV ANTSPATH="/opt/ants/bin" \
     ANTS_DEPS="zlib1g-dev"
 
 ## DSI Studio
-ENV QT_BASE_DIR="/opt/qt512"
-ENV QTDIR="$QT_BASE_DIR" \
-    PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
-    PATH="$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio/dsi_studio_64" \
-    DSI_STUDIO_DEPS="qt512base qt512charts-no-lgpl"
+ENV PATH="$PATH:/opt/dsi-studio/dsi_studio_64" \
+    DSI_STUDIO_DEPS=""
 
 ## MRtrix3
 COPY --from=build_mrtrix3 /opt/mrtrix3-latest /opt/mrtrix3-latest
@@ -107,50 +104,33 @@ COPY --from=build_miniconda /home/qsiprep/.dipy /home/qsiprep/.dipy
 ENV PATH="/usr/local/miniconda/bin:$PATH"
 
 
+# Dependencies for AFNI; requires a discontinued multiarch-support package from bionic (18.04)
 RUN apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
-           apt-utils \
-           bzip2 \
-           ca-certificates \
-           curl \
            ed \
-           bc \
            gsl-bin \
            libglib2.0-0 \
            libglu1-mesa-dev \
            libglw1-mesa \
            libgomp1 \
            libjpeg62 \
-           libpng16-16 \
-           libquadmath0 \
+           libpng12-0 \
            libxm4 \
-           libxmu6 \
-           libxt6 \
-           perl \
-           libtiff5 \
+           libxp6 \
            netpbm \
-           software-properties-common \
            tcsh \
            xfonts-base \
            xvfb \
-           zlib1g-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && curl -sSL --retry 5 -o /tmp/libxp6.deb https://upenn.box.com/shared/static/reyyundn0l3guvjzghrrv6t4w6md2tjd.deb \
-    && dpkg -i /tmp/libxp6.deb \
-    && rm /tmp/libxp6.deb \
-    && curl -sSL --retry 5 -o /tmp/libpng.deb http://snapshot.debian.org/archive/debian-security/20160113T213056Z/pool/updates/main/libp/libpng/libpng12-0_1.2.49-1%2Bdeb7u2_amd64.deb \
-    && dpkg -i /tmp/libpng.deb \
-    && rm /tmp/libpng.deb \
-    && apt-get install -f --no-install-recommends \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
+    && curl -sSL --retry 5 -o /tmp/multiarch.deb http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/multiarch-support_2.27-3ubuntu1.5_amd64.deb \
+    && dpkg -i /tmp/multiarch.deb \
+    && rm /tmp/multiarch.deb \
+    && apt-get install -f \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && gsl2_path="$(find / -name 'libgsl.so.19' || printf '')" \
     && if [ -n "$gsl2_path" ]; then \
          ln -sfv "$gsl2_path" "$(dirname $gsl2_path)/libgsl.so.0"; \
     fi \
-    && ldconfig \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && ldconfig
 
 RUN echo "Downloading Convert3D ..." \
     && mkdir -p /opt/convert3d-nightly \
@@ -162,29 +142,12 @@ RUN echo "Downloading Convert3D ..." \
 ENV C3DPATH="/opt/convert3d-nightly" \
     PATH="/opt/convert3d-nightly/bin:$PATH"
 
-# Prepare environment
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        zlib1g-dev graphviz libfftw3-3 && \
-    curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
-    apt-get install -y --no-install-recommends \
-      nodejs && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-RUN npm install -g svgo \
-    && npm install -g bids-validator@1.8.4
 
 # Install latest pandoc
 RUN curl -o pandoc-2.2.2.1-1-amd64.deb -sSL "https://github.com/jgm/pandoc/releases/download/2.2.2.1/pandoc-2.2.2.1-1-amd64.deb" && \
     dpkg -i pandoc-2.2.2.1-1-amd64.deb && \
     rm pandoc-2.2.2.1-1-amd64.deb
 
-# Install qt5.12.8
-RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
-    && apt-get update \
-    && apt install -y --no-install-recommends \
-    ${DSI_STUDIO_DEPS} ${MRTRIX3_DEPS} ${TORTOISE_DEPS} wget git binutils \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
 
 
@@ -209,7 +172,9 @@ WORKDIR /home/qsiprep
 
 # Unless otherwise specified each process should only use one thread - nipype
 # will handle parallelization
-ENV \
+ENV DEBIAN_FRONTEND="noninteractive" \
+    LANG="en_US.UTF-8" \
+    LC_ALL="en_US.UTF-8" \
     HOME="/home/qsiprep" \
     MKL_NUM_THREADS=1 \
     OMP_NUM_THREADS=1 \
@@ -235,10 +200,10 @@ RUN mkdir $CRN_SHARED_DATA && \
     /root/get_templates.sh && \
     chmod -R a+rX $CRN_SHARED_DATA
 
-RUN ln -s /opt/fsl-6.0.7.9/bin/eddy_cuda10.2 /opt/fsl-6.0.7.9/bin/eddy_cuda
+#RUN ln -s /opt/fsl-6.0.7.9/bin/eddy_cuda10.2 /opt/fsl-6.0.7.9/bin/eddy_cuda
 # Make it ok for singularity on CentOS
-RUN strip --remove-section=.note.ABI-tag /opt/qt512/lib/libQt5Core.so.5.12.8 \
-    && ldconfig
+# RUN strip --remove-section=.note.ABI-tag /opt/qt512/lib/libQt5Core.so.5.12.8 \
+#     && ldconfig
 
 # Download the atlases
 ENV QSIRECON_ATLAS /atlas/qsirecon_atlases
@@ -259,4 +224,4 @@ RUN  mkdir -p /sngl/data \
   && mkdir /sngl/filter \
   && chmod a+rwx /sngl/*
 
-ENV LD_LIBRARY_PATH="/opt/fsl-6.0.7.9/lib:$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:/opt/ants/lib:$LD_LIBRARY_PATH"
+ENV LD_LIBRARY_PATH="/opt/fsl-6.0.7.9/lib:/opt/ants/lib:$LD_LIBRARY_PATH"

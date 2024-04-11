@@ -1,7 +1,9 @@
 ARG TAG_ANTS
+FROM pennbbl/qsiprep-ants:${TAG_ANTS} as ants_build
+FROM nvidia/cuda:11.7.1-devel-ubuntu22.04 as base
 
-FROM pennbbl/qsiprep-ants:${TAG_ANTS} as base
 FROM base as builder
+COPY --from=ants_build /tmp/ants/build/ITKv5-build /tmp/ants/build/ITKv5-build
 
 RUN apt-get update && \
     apt install -y --no-install-recommends \
@@ -25,6 +27,7 @@ RUN \
   && ./b2 install
 
 
+COPY --from=ants_build /tmp/ants/build/ITKv5 /tmp/ants/build/ITKv5
 ARG TORTOISE_SHA=9fb5296649ef6de802fde25cca4cb2893a94c64d
 RUN \
   cd /src \
@@ -34,8 +37,7 @@ RUN \
   && cmake . \
       -DCMAKE_C_COMPILER=/usr/bin/gcc-11 \
       -DCMAKE_CXX_COMPILER=/usr/bin/g++-11 \
-      -DUSECUDA=0 \
-      -DQSIPREP=1 \
+      -DUSECUDA=1 \
       -DITK_DIR=/tmp/ants/build/ITKv5-build \
       -DISDEBUG=0 \
       && \
