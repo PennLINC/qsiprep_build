@@ -116,6 +116,13 @@ jobs:
       BUILD_FILE: "Dockerfile_TORTOISE"
     <<: *build
 
+  build_TORTOISECUDA:
+    environment:
+      VERSION_TAG: "TAG_TORTOISECUDA"
+      IMG_NAME: "qsiprep-drbuddicuda"
+      BUILD_FILE: "Dockerfile_TORTOISEcuda"
+    <<: *build
+
   build:
     environment:
       TZ: "/usr/share/zoneinfo/America/New_York"
@@ -217,6 +224,13 @@ workflows:
             tags:
               only: /.*/
 
+      - build_TORTOISECUDA:
+          requires:
+            - build_ANTs
+          filters:
+            tags:
+              only: /.*/
+
       - deployable:
           requires:
             - build_FSL
@@ -228,6 +242,7 @@ workflows:
             - build_Miniconda
             - build_AFNI
             - build_TORTOISE
+            - build_TORTOISECUDA
           filters:
             tags:
               only: /.*/

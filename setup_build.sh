@@ -16,7 +16,8 @@ export TAG_3TISSUE=24.4.5
 export TAG_DSISTUDIO=24.4.5
 export TAG_MINICONDA=24.4.6
 export TAG_AFNI=23.3.2
-export TAG_TORTOISE=24.4.6
+export TAG_TORTOISE=24.4.7
+export TAG_TORTOISECUDA=24.4.7
 
 echo "Settings:"
 echo "----------"
@@ -31,6 +32,7 @@ echo "TAG_DSISTUDIO=${TAG_DSISTUDIO}"
 echo "TAG_MINICONDA=${TAG_MINICONDA}"
 echo "TAG_AFNI=${TAG_AFNI}"
 echo "TAG_TORTOISE=${TAG_TORTOISE}"
+echo "TAG_TORTOISECUDA=${TAG_TORTOISECUDA}"
 
 
 do_build() {
@@ -55,6 +57,7 @@ do_build() {
         --build-arg TAG_MINICONDA=${TAG_MINICONDA} \
         --build-arg TAG_AFNI=${TAG_AFNI} \
         --build-arg TAG_TORTOISE=${TAG_TORTOISE} \
+        --build-arg TAG_TORTOISECUDA=${TAG_TORTOISECUDA} \
         --build-arg FSL_BUILD=${INCLUDE_FSL} \
         .
 

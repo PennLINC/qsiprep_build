@@ -14,7 +14,8 @@ RUN apt-get update && \
       cmake \
       make
 
-
+# Without running this, bootstrap.sh can't find the compiler
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
 RUN \
   mkdir /src \
   && cd /src \

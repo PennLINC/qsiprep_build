@@ -7,6 +7,7 @@ ARG TAG_DSISTUDIO
 ARG TAG_MINICONDA
 ARG TAG_AFNI
 ARG TAG_TORTOISE
+ARG TAG_TORTOISECUDA
 
 # TO include FSL set --build-arg FSL_BUILD=build_fsl
 # To skip it set --build-arg FSL_BUILD=no_fsl
