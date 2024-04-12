@@ -54,7 +54,7 @@ ENV ANTSPATH="/opt/ants/bin" \
     ANTS_DEPS="zlib1g-dev"
 
 ## DSI Studio
-ENV PATH="$PATH:/opt/dsi-studio/dsi_studio_64" \
+ENV PATH="$PATH:/opt/dsi-studio" \
     DSI_STUDIO_DEPS=""
 
 ## MRtrix3
@@ -67,7 +67,7 @@ ENV PATH="$PATH:/opt/mrtrix3-latest/bin:/opt/3Tissue/bin" \
 ## Freesurfer
 COPY --from=build_freesurfer /opt/freesurfer /opt/freesurfer
 # Simulate SetUpFreeSurfer.sh
-ENV FSL_DIR="/opt/fsl-6.0.7.9" \
+ENV FSL_DIR="/opt/conda/envs/fslqsiprep" \
     OS="Linux" \
     FS_OVERRIDE=0 \
     FIX_VERTEX_AREA="" \
@@ -163,13 +163,7 @@ ENV C3DPATH="/opt/convert3d-nightly" \
     PATH="/opt/convert3d-nightly/bin:$PATH"
 
 
-# Install latest pandoc
-RUN curl -o pandoc-2.2.2.1-1-amd64.deb -sSL "https://github.com/jgm/pandoc/releases/download/2.2.2.1/pandoc-2.2.2.1-1-amd64.deb" && \
-    dpkg -i pandoc-2.2.2.1-1-amd64.deb && \
-    rm pandoc-2.2.2.1-1-amd64.deb
-
 COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
-
 
 # Install ACPC-detect
 WORKDIR /opt/art
@@ -194,7 +188,6 @@ WORKDIR /home/qsiprep
 # will handle parallelization
 ENV DEBIAN_FRONTEND="noninteractive" \
     LANG="en_US.UTF-8" \
-    LC_ALL="en_US.UTF-8" \
     HOME="/home/qsiprep" \
     MKL_NUM_THREADS=1 \
     OMP_NUM_THREADS=1 \
@@ -204,15 +197,10 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     IS_DOCKER_8395080871=1 \
     ARTHOME="/opt/art" \
     DIPY_HOME=/home/qsiprep/.dipy \
-    QTDIR=$QT_BASE_DIR \
-    PATH=$QT_BASE_DIR/bin:$PATH \
-    PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
+    UV_USE_IO_URING=0
 
-# RUN if [ $FSL_BUILD == "build_fsl" ]; then \
-#     mkdir -p /tmp/src \
-#     && cd /tmp/src \
-#     && wget https://git.fmrib.ox.ac.uk/matteob/eddy_qc_release/-/archive/master/eddy_qc_release-master.zip \
-#     && unzip eddy_qc_release-master.zip
+RUN npm install -g svgo@^3.2.0 bids-validator@^1.14.0 \
+    && rm -r ~/.npm
 
 # Precaching atlases
 WORKDIR /root
@@ -245,4 +233,4 @@ RUN  mkdir -p /sngl/data \
   && mkdir /sngl/filter \
   && chmod a+rwx /sngl/*
 
-ENV LD_LIBRARY_PATH="/opt/fsl-6.0.7.9/lib:/opt/ants/lib:$LD_LIBRARY_PATH"
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/ants/lib:"
