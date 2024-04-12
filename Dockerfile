@@ -104,6 +104,24 @@ COPY --from=build_miniconda /usr/local/miniconda /usr/local/miniconda
 COPY --from=build_miniconda /home/qsiprep/.dipy /home/qsiprep/.dipy
 ENV PATH="/usr/local/miniconda/bin:$PATH"
 
+# Some baseline tools; bc is needed for FreeSurfer, so don't drop it
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+                    bc \
+                    ca-certificates \
+                    curl \
+                    git \
+                    gnupg \
+                    lsb-release \
+                    netbase \
+                    xvfb && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Configure PPAs for libpng12 and libxp6
+RUN GNUPGHOME=/tmp gpg --keyserver hkps://keyserver.ubuntu.com --no-default-keyring --keyring /usr/share/keyrings/linuxuprising.gpg --recv 0xEA8CACC073C3DB2A \
+    && GNUPGHOME=/tmp gpg --keyserver hkps://keyserver.ubuntu.com --no-default-keyring --keyring /usr/share/keyrings/zeehio.gpg --recv 0xA1301338A3A48C4A \
+    && echo "deb [signed-by=/usr/share/keyrings/linuxuprising.gpg] https://ppa.launchpadcontent.net/linuxuprising/libpng12/ubuntu jammy main" > /etc/apt/sources.list.d/linuxuprising.list \
+    && echo "deb [signed-by=/usr/share/keyrings/zeehio.gpg] https://ppa.launchpadcontent.net/zeehio/libxp/ubuntu jammy main" > /etc/apt/sources.list.d/zeehio.list
 
 # Dependencies for AFNI; requires a discontinued multiarch-support package from bionic (18.04)
 RUN apt-get update -qq \
@@ -120,6 +138,7 @@ RUN apt-get update -qq \
            libxp6 \
            netpbm \
            tcsh \
+           wget \
            xfonts-base \
            xvfb \
     && curl -sSL --retry 5 -o /tmp/multiarch.deb http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/multiarch-support_2.27-3ubuntu1.5_amd64.deb \
@@ -196,6 +215,7 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 #     && unzip eddy_qc_release-master.zip
 
 # Precaching atlases
+WORKDIR /root
 ADD docker/scripts/get_templates.sh get_templates.sh
 RUN mkdir $CRN_SHARED_DATA && \
     /root/get_templates.sh && \
