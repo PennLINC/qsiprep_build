@@ -28,7 +28,7 @@ FROM ubuntu:jammy-20240125 as ubuntu
 
 # Make a dummy fsl image containing no FSL
 FROM ubuntu as no_fsl
-RUN mkdir -p /opt/conda/envs/fslqsiprep \
+RUN mkdir -p /opt/conda/envs/fslqsiprep/bin \
     && touch /opt/conda/envs/fslqsiprep/bin/eddy_cuda10.2
 
 FROM ${FSL_BUILD} as this-fsl
