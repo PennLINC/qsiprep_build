@@ -123,8 +123,7 @@ RUN GNUPGHOME=/tmp gpg --keyserver hkps://keyserver.ubuntu.com --no-default-keyr
     && echo "deb [signed-by=/usr/share/keyrings/zeehio.gpg] https://ppa.launchpadcontent.net/zeehio/libxp/ubuntu jammy main" > /etc/apt/sources.list.d/zeehio.list
 
 # Dependencies for AFNI; requires a discontinued multiarch-support package from bionic (18.04)
-RUN  \
-    && apt-get update -qq \
+RUN  apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
            ed \
            gsl-bin \
