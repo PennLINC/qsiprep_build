@@ -55,7 +55,7 @@ ENV ANTSPATH="/opt/ants/bin" \
 
 ## DSI Studio
 ENV PATH="$PATH:/opt/dsi-studio" \
-    DSI_STUDIO_DEPS=""
+    DSI_STUDIO_DEPS="libqt6network6 libqt6opengl6 qt6-image-formats-plugins libqt6charts6"
 
 ## MRtrix3
 COPY --from=build_mrtrix3 /opt/mrtrix3-latest /opt/mrtrix3-latest
@@ -97,7 +97,7 @@ COPY --from=build_tortoise /src/TORTOISEV4/bin /src/TORTOISEV4/bin
 COPY --from=build_tortoise /src/TORTOISEV4/settings /src/TORTOISEV4/settings
 COPY --from=build_tortoise /usr/local/boost176 /usr/local/boost176
 ENV PATH="$PATH:/src/TORTOISEV4/bin" \
-    TORTOISE_DEPS="libeigen3-dev fftw3 libfftw3-dev"
+    TORTOISE_DEPS="fftw3"
 
 ## Python, compiled dependencies
 COPY --from=build_miniconda /usr/local/miniconda /usr/local/miniconda
@@ -105,11 +105,10 @@ COPY --from=build_miniconda /home/qsiprep/.dipy /home/qsiprep/.dipy
 ENV PATH="/usr/local/miniconda/bin:$PATH"
 
 # Some baseline tools; bc is needed for FreeSurfer, so don't drop it
-RUN apt-get update && \
+RUN binary_deps=$(echo ${FSL_DEPS} ${ANTS_DEPS} ${DSI_STUDIO_DEPS} ${MRTRIX3_DEPS} ${FREESURFER_DEPS} ${TORTOISE_DEPS} | sort | uniq) \
+    && apt-get update && \
     apt-get install -y --no-install-recommends \
-                    bc \
-                    ca-certificates \
-                    curl \
+                    ${binary_deps} \
                     git \
                     gnupg \
                     lsb-release \
@@ -124,7 +123,8 @@ RUN GNUPGHOME=/tmp gpg --keyserver hkps://keyserver.ubuntu.com --no-default-keyr
     && echo "deb [signed-by=/usr/share/keyrings/zeehio.gpg] https://ppa.launchpadcontent.net/zeehio/libxp/ubuntu jammy main" > /etc/apt/sources.list.d/zeehio.list
 
 # Dependencies for AFNI; requires a discontinued multiarch-support package from bionic (18.04)
-RUN apt-get update -qq \
+RUN  \
+    && apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
            ed \
            gsl-bin \
@@ -137,7 +137,6 @@ RUN apt-get update -qq \
            libxm4 \
            libxp6 \
            netpbm \
-           tcsh \
            wget \
            xfonts-base \
            xvfb \

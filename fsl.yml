@@ -8,6 +8,7 @@ dependencies:
   - fsl-flirt=2111.2
   - fsl-fast4=2111.3
   - fsl-fugue=2201.4
+  - fsl-mcflirt 2111.0
   - fsl-miscmaths=2203.2
   - fsl-mist=2111.5
   - fsl-topup=2203.2

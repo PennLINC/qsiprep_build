@@ -8,7 +8,7 @@ fi
 export BUILD_TAG
 
 # Versions of the components
-export TAG_FSL=24.4.8
+export TAG_FSL=24.4.12
 export TAG_FREESURFER=23.3.0
 export TAG_ANTS=24.4.5
 export TAG_MRTRIX3=24.4.5
