@@ -111,7 +111,7 @@ jobs:
 
   build_Micromamba:
     environment:
-      VERSION_TAG: "TAG_MINICONDA"
+      VERSION_TAG: "TAG_MICROMAMBA"
       IMG_NAME: "qsiprep-micromamba"
       BUILD_FILE: "Dockerfile_Micromamba"
     <<: *build
