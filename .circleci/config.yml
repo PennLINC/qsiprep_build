@@ -109,6 +109,13 @@ jobs:
       BUILD_FILE: "Dockerfile_Miniconda"
     <<: *build
 
+  build_Micromamba:
+    environment:
+      VERSION_TAG: "TAG_MINICONDA"
+      IMG_NAME: "qsiprep-micromamba"
+      BUILD_FILE: "Dockerfile_Micromamba"
+    <<: *build
+
   build_TORTOISE:
     environment:
       VERSION_TAG: "TAG_TORTOISE"
@@ -217,6 +224,11 @@ workflows:
             tags:
               only: /.*/
 
+      - build_Micromamba:
+          filters:
+            tags:
+              only: /.*/
+
       - build_TORTOISE:
           requires:
             - build_ANTs
@@ -239,7 +251,7 @@ workflows:
             - build_MRtrix3
             - build_DSIStudio
             - build_ANTs
-            - build_Miniconda
+            - build_Micromamba
             - build_AFNI
             - build_TORTOISE
             - build_TORTOISECUDA

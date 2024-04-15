@@ -5,6 +5,7 @@ ARG TAG_MRTRIX3
 ARG TAG_3TISSUE
 ARG TAG_DSISTUDIO
 ARG TAG_MINICONDA
+ARG TAG_MICROMAMBA
 ARG TAG_AFNI
 ARG TAG_TORTOISE
 ARG TAG_TORTOISECUDA
@@ -20,7 +21,7 @@ FROM pennbbl/qsiprep-ants:${TAG_ANTS} as build_ants
 FROM pennbbl/qsiprep-mrtrix3:${TAG_MRTRIX3} as build_mrtrix3
 FROM pennbbl/qsiprep-3tissue:${TAG_3TISSUE} as build_3tissue
 FROM pennbbl/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
-FROM pennbbl/qsiprep-miniconda:${TAG_MINICONDA} as build_miniconda
+FROM pennbbl/qsiprep-micromamba:${TAG_MICROMAMBA} as build_micromamba
 FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
 FROM pennlinc/atlaspack:0.1.0 as atlaspack
@@ -100,9 +101,9 @@ ENV PATH="$PATH:/src/TORTOISEV4/bin" \
     TORTOISE_DEPS="fftw3"
 
 ## Python, compiled dependencies
-COPY --from=build_miniconda /usr/local/miniconda /usr/local/miniconda
-COPY --from=build_miniconda /home/qsiprep/.dipy /home/qsiprep/.dipy
-ENV PATH="/usr/local/miniconda/bin:$PATH"
+COPY --from=build_micromamba /opt/conda/envs/qsiprep /opt/conda/envs/qsiprep
+COPY --from=build_micromamba /home/qsiprep/.dipy /home/qsiprep/.dipy
+ENV PATH="/opt/conda/envs/qsiprep/bin:$PATH"
 
 # Some baseline tools; bc is needed for FreeSurfer, so don't drop it
 RUN binary_deps=$(echo ${FSL_DEPS} ${ANTS_DEPS} ${DSI_STUDIO_DEPS} ${MRTRIX3_DEPS} ${FREESURFER_DEPS} ${TORTOISE_DEPS} | sort | uniq) \
@@ -111,6 +112,7 @@ RUN binary_deps=$(echo ${FSL_DEPS} ${ANTS_DEPS} ${DSI_STUDIO_DEPS} ${MRTRIX3_DEP
                     ${binary_deps} \
                     git \
                     gnupg \
+                    graphviz \
                     lsb-release \
                     netbase \
                     xvfb && \
@@ -196,9 +198,6 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     ARTHOME="/opt/art" \
     DIPY_HOME=/home/qsiprep/.dipy \
     UV_USE_IO_URING=0
-
-RUN npm install -g svgo@^3.2.0 bids-validator@^1.14.0 \
-    && rm -r ~/.npm
 
 # Precaching atlases
 WORKDIR /root

@@ -46,15 +46,19 @@ RUN echo "2024.04.11"
 RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
 
 ENV MAMBA_ROOT_PREFIX="/opt/conda" \
-    MAMBA_NO_LOW_SPEED_LIMIT=1
+    MAMBA_NO_LOW_SPEED_LIMIT=1 \
+    PIP_DEFAULT_TIMEOUT=100
 
-COPY env.yml /tmp/env.yml
-COPY requirements.txt /tmp/requirements.txt
+COPY qsiprep_env.yml /tmp/env.yml
 
 WORKDIR /tmp
 RUN micromamba config set extract_threads 1
-RUN micromamba create -vvv -y -f /tmp/env.yml
+RUN micromamba create -vv -y -f /tmp/env.yml
+ENV PATH=/opt/conda/envs/qsiprep/bin:$PATH
+RUN npm install -g svgo@^3.2.0 bids-validator@1.8.4 \
+    && rm -r ~/.npm
 RUN micromamba clean -y -a
 
-# RUN mkdir -p ${HOME}/.dipy \
-#     && /usr/local/miniconda/bin/python -c "import amico; amico.core.setup()"
+
+RUN mkdir -p ${HOME}/.dipy \
+    && python -c "import amico; amico.core.setup()"
