@@ -162,6 +162,17 @@ RUN echo "Downloading Convert3D ..." \
 ENV C3DPATH="/opt/convert3d-nightly" \
     PATH="/opt/convert3d-nightly/bin:$PATH"
 
+# Get nodejs
+RUN apt-get update && \
+apt-get install -y --no-install-recommends \
+    zlib1g-dev graphviz libfftw3-3 && \
+curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
+apt-get install -y --no-install-recommends \
+  nodejs && \
+apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN npm install -g svgo \
+&& npm install -g bids-validator@1.8.4
 
 COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
 
