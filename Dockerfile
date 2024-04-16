@@ -110,13 +110,16 @@ RUN binary_deps=$(echo ${FSL_DEPS} ${ANTS_DEPS} ${DSI_STUDIO_DEPS} ${MRTRIX3_DEP
     && apt-get update && \
     apt-get install -y --no-install-recommends \
                     ${binary_deps} \
+                    binutils \
                     git \
                     gnupg \
                     graphviz \
                     lsb-release \
                     netbase \
                     xvfb && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && strip --remove-section=.note.ABI-tag /lib/x86_64-linux-gnu/libQt6Core.so.6.2.4
+
 
 # Configure PPAs for libpng12 and libxp6
 RUN GNUPGHOME=/tmp gpg --keyserver hkps://keyserver.ubuntu.com --no-default-keyring --keyring /usr/share/keyrings/linuxuprising.gpg --recv 0xEA8CACC073C3DB2A \
