@@ -55,8 +55,6 @@ WORKDIR /tmp
 RUN micromamba config set extract_threads 1
 RUN micromamba create -vv -y -f /tmp/env.yml
 ENV PATH=/opt/conda/envs/qsiprep/bin:$PATH
-RUN npm install -g svgo@^3.2.0 bids-validator@1.8.4 \
-    && rm -r ~/.npm
 RUN micromamba clean -y -a
 
 
