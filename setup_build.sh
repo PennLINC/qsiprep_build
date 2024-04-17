@@ -17,8 +17,8 @@ export TAG_DSISTUDIO=24.4.5
 export TAG_MINICONDA=24.4.11
 export TAG_MICROMAMBA=24.4.17
 export TAG_AFNI=23.3.2
-export TAG_TORTOISE=24.4.7
-export TAG_TORTOISECUDA=24.4.7
+export TAG_TORTOISE=24.4.20
+export TAG_TORTOISECUDA=24.4.20
 
 echo "Settings:"
 echo "----------"
