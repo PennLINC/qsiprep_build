@@ -24,6 +24,7 @@ FROM pennbbl/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
 FROM pennbbl/qsiprep-micromamba:${TAG_MICROMAMBA} as build_micromamba
 FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
+FROM pennbbl/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
 FROM pennlinc/atlaspack:0.1.0 as atlaspack
 FROM ubuntu:jammy-20240125 as ubuntu
 
@@ -97,6 +98,7 @@ ENV PATH="$PATH:/opt/afni-latest" \
 COPY --from=build_tortoise /src/TORTOISEV4/bin /src/TORTOISEV4/bin
 COPY --from=build_tortoise /src/TORTOISEV4/settings /src/TORTOISEV4/settings
 COPY --from=build_tortoise /usr/local/boost176 /usr/local/boost176
+COPY --from=build_tortoisec /src/TORTOISEV4/bin/*cuda /src/TORTOISEV4/bin/
 ENV PATH="$PATH:/src/TORTOISEV4/bin" \
     TORTOISE_DEPS="fftw3"
 
@@ -172,7 +174,8 @@ apt-get install -y --no-install-recommends \
 curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
 apt-get install -y --no-install-recommends \
   nodejs && \
-apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  && \
+ldconfig
 
 RUN npm install -g svgo \
 && npm install -g bids-validator@1.8.4
@@ -206,6 +209,8 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     MKL_NUM_THREADS=1 \
     OMP_NUM_THREADS=1 \
     MRTRIX_NTHREADS=1 \
+    ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1 \
+    NSLOTS=1 \
     KMP_WARNINGS=0 \
     CRN_SHARED_DATA=/niworkflows_data \
     IS_DOCKER_8395080871=1 \
@@ -219,11 +224,6 @@ ADD docker/scripts/get_templates.sh get_templates.sh
 RUN mkdir $CRN_SHARED_DATA && \
     /root/get_templates.sh && \
     chmod -R a+rX $CRN_SHARED_DATA
-
-#RUN ln -s /opt/fsl-6.0.7.9/bin/eddy_cuda10.2 /opt/fsl-6.0.7.9/bin/eddy_cuda
-# Make it ok for singularity on CentOS
-# RUN strip --remove-section=.note.ABI-tag /opt/qt512/lib/libQt5Core.so.5.12.8 \
-#     && ldconfig
 
 # Download the atlases
 ENV QSIRECON_ATLAS /atlas/qsirecon_atlases
