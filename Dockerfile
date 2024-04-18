@@ -98,7 +98,7 @@ ENV PATH="$PATH:/opt/afni-latest" \
 COPY --from=build_tortoise /src/TORTOISEV4/bin /src/TORTOISEV4/bin
 COPY --from=build_tortoise /src/TORTOISEV4/settings /src/TORTOISEV4/settings
 COPY --from=build_tortoise /usr/local/boost176 /usr/local/boost176
-COPY --from=build_tortoisec /src/TORTOISEV4/bin/*cuda /src/TORTOISEV4/bin/
+COPY --from=build_tortoisecuda /src/TORTOISEV4/bin/*cuda /src/TORTOISEV4/bin/
 ENV PATH="$PATH:/src/TORTOISEV4/bin" \
     TORTOISE_DEPS="fftw3"
 
