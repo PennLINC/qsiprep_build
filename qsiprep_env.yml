@@ -32,7 +32,7 @@ dependencies:
       - sqlalchemy==2.0.27
       - surfa==0.6.0
       - templateflow==23.1.0
-      - tensorflow-cpu==2.8.4
+      - tensorflow-gpu==2.8.4
       - torch==1.13.1
       - transforms3d==0.4.1
       - trx-python==0.2.9

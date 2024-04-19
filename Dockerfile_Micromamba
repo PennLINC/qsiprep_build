@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM ubuntu:jammy-20240125
+FROM nvidia/cuda:11.7.1-runtime-ubuntu22.04
 ARG TAG_ANTS
 
 RUN apt-get update && \

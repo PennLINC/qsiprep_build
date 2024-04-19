@@ -26,7 +26,7 @@ FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
 FROM pennbbl/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
 FROM pennlinc/atlaspack:0.1.0 as atlaspack
-FROM ubuntu:jammy-20240125 as ubuntu
+FROM nvidia/cuda:11.7.1-runtime-ubuntu22.04 as ubuntu
 
 # Make a dummy fsl image containing no FSL
 FROM ubuntu as no_fsl
@@ -165,7 +165,8 @@ RUN echo "Downloading Convert3D ..." \
     --exclude "c3d-1.0.0-Linux-x86_64/share" \
     --exclude "c3d-1.0.0-Linux-x86_64/bin/c3d_gui"
 ENV C3DPATH="/opt/convert3d-nightly" \
-    PATH="/opt/convert3d-nightly/bin:$PATH"
+    PATH="/opt/convert3d-nightly/bin:$PATH" \
+    LD_LIBRARY_PATH=/opt/conda/envs/qsiprep/lib/python3.10/site-packages/nvidia/cudnn/lib:$LD_LIBRARY_PATH
 
 # Get nodejs
 RUN apt-get update && \
@@ -209,8 +210,6 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     MKL_NUM_THREADS=1 \
     OMP_NUM_THREADS=1 \
     MRTRIX_NTHREADS=1 \
-    ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1 \
-    NSLOTS=1 \
     KMP_WARNINGS=0 \
     CRN_SHARED_DATA=/niworkflows_data \
     IS_DOCKER_8395080871=1 \
