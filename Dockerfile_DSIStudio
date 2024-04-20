@@ -1,5 +1,6 @@
-FROM ubuntu:18.04
+FROM nvidia/cuda:11.2.2-devel-ubuntu18.04
 ARG TAG_ANTS
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 
 RUN apt update && apt full-upgrade -y && \
   apt install --no-install-recommends -y software-properties-common && \
@@ -8,6 +9,7 @@ RUN apt update && apt full-upgrade -y && \
   apt install -y --no-install-recommends \
   unzip \
   curl \
+  wget \
   make \
   git \
   libboost-all-dev \
@@ -17,30 +19,29 @@ RUN apt update && apt full-upgrade -y && \
   qt512charts-no-lgpl \
   mesa-common-dev \
   libglu1-mesa-dev \
+  build-essential \
+  ca-certificates \
+  gnupg \
+  bc \
+  ninja-build \
+  apt-transport-https \
   gcc-9 \
   g++-9 && \
+  update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9 && \
   apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 \
-                    99 \
-                    --slave   /usr/bin/cc cc /usr/bin/gcc-9 \
-                    --slave   /usr/bin/c++ c++ /usr/bin/g++-9 \
-                    --slave   /usr/bin/g++ g++ /usr/bin/g++-9 \
-                    --slave   /usr/bin/gcov gcov /usr/bin/gcov-9 \
-                    --slave   /usr/bin/gcov-dump gcov-dump /usr/bin/gcov-dump-9 \
-                    --slave   /usr/bin/gcov-tool gcov-tool /usr/bin/gcov-tool-9 \
-                    --slave   /usr/bin/gcc-ar gcc-ar /usr/bin/gcc-ar-9 \
-                    --slave   /usr/bin/gcc-nm gcc-nm /usr/bin/gcc-nm-9 \
-                    --slave   /usr/bin/gcc-ranlib gcc-ranlib /usr/bin/gcc-ranlib-9
-
-RUN update-alternatives --auto gcc
+  RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
+  | apt-key add - \
+&& apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ bionic main' \
+&& apt-get update \
+&& apt-get -y install cmake=3.23.2-0kitware1ubuntu18.04.1 cmake-data=3.23.2-0kitware1ubuntu18.04.1
 
 #Need to use a different shell so the QT ENV script works
 SHELL ["/bin/bash", "-c"]
 ENV PATH="$PATH:/opt/qt512/bin"
 
-ARG DSI_SHA=8118e168f096c897dcc40f9ecc3ba72b1925cb7d
-ARG TIPL_SHA=485a9b140ee4544a1e9c9c084b9d1012ff0b1523
+ARG DSI_SHA=b7b1f10d6c9599983352050a923a10da4888a30c
+ARG TIPL_SHA=3e2a371f47a994d162055675617d7488895eca2a
 
 RUN source /opt/qt512/bin/qt512-env.sh \
   && mkdir /opt/dsi-studio \
@@ -56,13 +57,21 @@ RUN source /opt/qt512/bin/qt512-env.sh \
   && mkdir build && cd build \
   && qmake ../src && make -j 1
 
-ARG ATLAS_SHA=e2e00a8a09cf735c1e6018c258f239586bd77d68
+ARG ATLAS_SHA=e4c2549c42f1858913de7269eac827cc64ae3d29
+ARG UNET_SHA=68621730186b9ac18d4610324aecfb7b9196a9fb
 
-RUN mkdir -p /opt/dsi-studio/dsi_studio_64 \
-  && cd /opt/dsi-studio/dsi_studio_64 \
+RUN cd /opt/dsi-studio \
+  && mv build/dsi_studio . \
+  && chmod 755 dsi_studio \
+  && cp -R src/other/* . \
+  && rm -rf src build \
+  && curl -sSLO https://github.com/frankyeh/UNet-Studio-Data/archive/${UNET_SHA}.zip \
+  && unzip ${UNET_SHA}.zip \
+  && rm ${UNET_SHA}.zip \
+  && mv UNet-Studio-Data-${UNET_SHA}/network/ . \
+  && rm -rf mv UNet-Studio-Data-${UNET_SHA} \
   && curl -sSLO https://github.com/frankyeh/DSI-Studio-atlas/archive/${ATLAS_SHA}.zip \
   && unzip ${ATLAS_SHA}.zip \
+  && rm -rf DSI-Studio-atlas-${ATLAS_SHA}/.git \
   && mv DSI-Studio-atlas-${ATLAS_SHA} atlas \
-  && rm ${ATLAS_SHA}.zip \
-  && mv ../build/dsi_studio . \
-  && rm -rf /opt/dsi-studio/src /opt/dsi-studio/build
+  && rm ${ATLAS_SHA}.zip

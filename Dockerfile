@@ -4,9 +4,10 @@ ARG TAG_ANTS
 ARG TAG_MRTRIX3
 ARG TAG_3TISSUE
 ARG TAG_DSISTUDIO
-ARG TAG_MINICONDA
+ARG TAG_MICROMAMBA
 ARG TAG_AFNI
 ARG TAG_TORTOISE
+ARG TAG_TORTOISECUDA
 
 # TO include FSL set --build-arg FSL_BUILD=build_fsl
 # To skip it set --build-arg FSL_BUILD=no_fsl
@@ -19,30 +20,31 @@ FROM pennbbl/qsiprep-ants:${TAG_ANTS} as build_ants
 FROM pennbbl/qsiprep-mrtrix3:${TAG_MRTRIX3} as build_mrtrix3
 FROM pennbbl/qsiprep-3tissue:${TAG_3TISSUE} as build_3tissue
 FROM pennbbl/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
-FROM pennbbl/qsiprep-miniconda:${TAG_MINICONDA} as build_miniconda
+FROM pennbbl/qsiprep-micromamba:${TAG_MICROMAMBA} as build_micromamba
 FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
-FROM ubuntu:18.04 as ubuntu
+FROM pennbbl/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
+FROM pennlinc/atlaspack:0.1.0 as atlaspack
+FROM nvidia/cuda:11.1.1-runtime-ubuntu18.04 as ubuntu
 
 # Make a dummy fsl image containing no FSL
 FROM ubuntu as no_fsl
-RUN mkdir -p opt/fsl-6.0.5.1/bin \
-    && touch /opt/fsl-6.0.5.1/bin/eddy_cuda10.2
+RUN mkdir -p /opt/conda/envs/fslqsiprep/bin \
+    && touch /opt/conda/envs/fslqsiprep/bin/eddy_cuda10.2
 
 FROM ${FSL_BUILD} as this-fsl
 
 FROM ubuntu
 ## FSL
-COPY --from=this-fsl /opt/fsl-6.0.5.1 /opt/fsl-6.0.5.1
-ENV FSLDIR="/opt/fsl-6.0.5.1" \
+COPY --from=this-fsl /opt/conda/envs/fslqsiprep /opt/conda/envs/fslqsiprep
+ENV FSLDIR="/opt/conda/envs/fslqsiprep" \
     FSLOUTPUTTYPE="NIFTI_GZ" \
     FSLMULTIFILEQUIT="TRUE" \
     FSLLOCKDIR="" \
     FSLMACHINELIST="" \
     FSLREMOTECALL="" \
     FSLGECUDAQ="cuda.q" \
-    LD_LIBRARY_PATH="/opt/fsl-6.0.5.1/lib:$LD_LIBRARY_PATH" \
-    PATH="/opt/fsl-6.0.5.1/bin:$PATH" \
+    PATH="/opt/conda/envs/fslqsiprep/bin:$PATH" \
     FSL_DEPS="libquadmath0" \
     FSL_BUILD="${FSL_BUILD}"
 
@@ -58,7 +60,7 @@ ENV QT_BASE_DIR="/opt/qt512"
 ENV QTDIR="$QT_BASE_DIR" \
     LD_LIBRARY_PATH="$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" \
     PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
-    PATH="$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio/dsi_studio_64" \
+    PATH="$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio" \
     DSI_STUDIO_DEPS="qt512base qt512charts-no-lgpl"
 
 ## MRtrix3
@@ -100,13 +102,18 @@ ENV PATH="$PATH:/opt/afni-latest" \
 COPY --from=build_tortoise /src/TORTOISEV4/bin /src/TORTOISEV4/bin
 COPY --from=build_tortoise /src/TORTOISEV4/settings /src/TORTOISEV4/settings
 COPY --from=build_tortoise /usr/local/boost176 /usr/local/boost176
+COPY --from=build_tortoisecuda /src/TORTOISEV4/bin/*cuda /src/TORTOISEV4/bin/
 ENV PATH="$PATH:/src/TORTOISEV4/bin" \
-    TORTOISE_DEPS="libeigen3-dev fftw3 libfftw3-dev"
+    TORTOISE_DEPS="fftw3"
+
+    # Create a shared $HOME directory
+RUN useradd -m -s /bin/bash -G users qsiprep
+WORKDIR /home/qsiprep
 
 ## Python, compiled dependencies
-COPY --from=build_miniconda /usr/local/miniconda /usr/local/miniconda
-COPY --from=build_miniconda /home/qsiprep/.dipy /home/qsiprep/.dipy
-ENV PATH="/usr/local/miniconda/bin:$PATH"
+COPY --from=build_micromamba /opt/conda/envs/qsiprep /opt/conda/envs/qsiprep
+COPY --from=build_micromamba /home/qsiprep/.dipy /home/qsiprep/.dipy
+ENV PATH="/opt/conda/envs/qsiprep/bin:$PATH"
 
 RUN apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
@@ -167,7 +174,7 @@ ENV C3DPATH="/opt/convert3d-nightly" \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         zlib1g-dev graphviz libfftw3-3 && \
-    curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
+    curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y --no-install-recommends \
       nodejs && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -201,10 +208,6 @@ RUN cd /opt/art \
     && curl -fsSL https://osf.io/73h5s/download \
     | tar xz --strip-components 1
 
-# Create a shared $HOME directory
-RUN useradd -m -s /bin/bash -G users qsiprep
-WORKDIR /home/qsiprep
-
 # Unless otherwise specified each process should only use one thread - nipype
 # will handle parallelization
 ENV \
@@ -222,33 +225,20 @@ ENV \
     LD_LIBRARY_PATH=$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH \
     PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
-## Install cudart and cublas for eddy_cuda
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.1-1_all.deb \
-  && dpkg -i cuda-keyring_1.1-1_all.deb \
-  && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-license-10-2_10.2.89-1_amd64.deb \
-  && dpkg -i cuda-license-10-2_10.2.89-1_amd64.deb \
-  && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-cudart-10-2_10.2.89-1_amd64.deb \
-  && dpkg -i cuda-cudart-10-2_10.2.89-1_amd64.deb \
-  && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/libcublas10_10.2.3.254-1_amd64.deb \
-  && dpkg -i libcublas10_10.2.3.254-1_amd64.deb \
-  && rm *.deb \
-  && ldconfig
-
 WORKDIR /root/
 
-# RUN if [ $FSL_BUILD == "build_fsl" ]; then \
-#     mkdir -p /tmp/src \
-#     && cd /tmp/src \
-#     && wget https://git.fmrib.ox.ac.uk/matteob/eddy_qc_release/-/archive/master/eddy_qc_release-master.zip \
-#     && unzip eddy_qc_release-master.zip
-
-# Precaching atlases
+# Precaching atlases + AtlasPack
+RUN mkdir /AtlasPack
+COPY --from=atlaspack /AtlasPack/tpl-fsLR_*.dlabel.nii /AtlasPack/
+COPY --from=atlaspack /AtlasPack/tpl-MNI152NLin6Asym_*.nii.gz /AtlasPack/
+COPY --from=atlaspack /AtlasPack/tpl-MNI152NLin2009cAsym_*.nii.gz /AtlasPack/
+COPY --from=atlaspack /AtlasPack/atlas-4S*.tsv /AtlasPack/
+COPY --from=atlaspack /AtlasPack/*.json /AtlasPack/
 ADD docker/scripts/get_templates.sh get_templates.sh
 RUN mkdir $CRN_SHARED_DATA && \
     /root/get_templates.sh && \
     chmod -R a+rX $CRN_SHARED_DATA
 
-RUN ln -s /opt/fsl-6.0.5.1/bin/eddy_cuda10.2 /opt/fsl-6.0.5.1/bin/eddy_cuda
 # Make it ok for singularity on CentOS
 RUN strip --remove-section=.note.ABI-tag /opt/qt512/lib/libQt5Core.so.5.12.8 \
     && ldconfig

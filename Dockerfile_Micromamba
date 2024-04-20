@@ -1,0 +1,62 @@
+# Copied from: fMRIPrep Docker Container Image distribution
+#
+# MIT License
+#
+# Copyright (c) 2021 The NiPreps Developers
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+FROM nvidia/cuda:11.2.2-devel-ubuntu18.04
+ARG TAG_ANTS
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+                    ca-certificates \
+                    curl \
+                    libblas-dev \
+                    liblapack-dev \
+                    build-essential \
+                    bzip2 \
+                    libgomp1
+
+# Create a shared $HOME directory
+RUN useradd -m -s /bin/bash -G users qsiprep
+WORKDIR /home/qsiprep
+ENV HOME="/home/qsiprep"
+
+
+WORKDIR /
+RUN echo "2024.04.11"
+RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+
+ENV MAMBA_ROOT_PREFIX="/opt/conda" \
+    MAMBA_NO_LOW_SPEED_LIMIT=1 \
+    PIP_DEFAULT_TIMEOUT=100
+
+COPY qsiprep_env.yml /tmp/env.yml
+
+WORKDIR /tmp
+RUN micromamba config set extract_threads 1
+RUN micromamba create -vv -y -f /tmp/env.yml
+ENV PATH=/opt/conda/envs/qsiprep/bin:$PATH
+RUN micromamba clean -y -a
+
+
+RUN mkdir -p ${HOME}/.dipy \
+    && python -c "import amico; amico.core.setup()"

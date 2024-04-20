@@ -1,11 +1,11 @@
-FROM ubuntu:18.04
+FROM nvidia/cuda:11.2.2-devel-ubuntu18.04
 ARG TAG_ANTS
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl git g++ python libeigen3-dev zlib1g-dev libqt5opengl5-dev libqt5svg5-dev libgl1-mesa-dev libfftw3-dev libtiff5-dev libpng-dev unzip
 
-ARG MRTRIX_SHA=3498ff469b843d5b023c3675f1d955ba4105c5d1
+ARG MRTRIX_SHA=670e7b0625572f8b1f13b2793bde506526985d55
 ENV PATH="/opt/mrtrix3-latest/bin:$PATH"
 RUN cd /opt \
     && curl -sSLO https://github.com/MRtrix3/mrtrix3/archive/${MRTRIX_SHA}.zip \

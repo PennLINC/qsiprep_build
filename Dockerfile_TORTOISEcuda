@@ -27,9 +27,9 @@ RUN \
   && cd /src \
   && wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz \
   && tar -xvf boost_1_77_0.tar.gz \
-  && cd boost_1_77_0 \
   && rm /usr/bin/g++ \
   && ln -s /usr/bin/g++-9 /usr/bin/g++ \
+  && cd boost_1_77_0 \
   && ./bootstrap.sh --with-libraries=iostreams,filesystem,system,regex --prefix=/usr/local/boost176 \
   && ./b2 install
 

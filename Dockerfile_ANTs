@@ -1,4 +1,4 @@
-FROM ubuntu:18.04 as base
+FROM nvidia/cuda:11.2.2-devel-ubuntu18.04 as base
 ARG TAG_ANTS
 FROM base as builder
 
@@ -49,7 +49,7 @@ RUN mkdir /tmp/ants \
         -DSuperBuild_ANTS_CXX_OPTIMIZATION_FLAGS="-mtune=x86-64 -march=x86-64" \
         -DCMAKE_INSTALL_PREFIX=/opt/ants \
         /tmp/ants/source \
-    && cmake --build . --parallel 4 \
+    && cmake --build . --parallel 1 \
     && cd ANTS-build \
     && cmake --install . \
     && cd /opt/ants/bin \

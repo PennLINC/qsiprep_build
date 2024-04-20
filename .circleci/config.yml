@@ -7,7 +7,7 @@ build: &build
   steps:
     - checkout
     - setup_remote_docker:
-        version: 19.03.13
+        version: docker24
     - run:
         name: Check whether build should be skipped
         command: |
@@ -56,7 +56,7 @@ jobs:
     environment:
       VERSION_TAG: "TAG_FSL"
       IMG_NAME: "qsiprep-fsl"
-      BUILD_FILE: "Dockerfile_FSL"
+      BUILD_FILE: "Dockerfile_FSLconda"
     <<: *build
 
   build_FreeSurfer:
@@ -109,11 +109,25 @@ jobs:
       BUILD_FILE: "Dockerfile_Miniconda"
     <<: *build
 
+  build_Micromamba:
+    environment:
+      VERSION_TAG: "TAG_MICROMAMBA"
+      IMG_NAME: "qsiprep-micromamba"
+      BUILD_FILE: "Dockerfile_Micromamba"
+    <<: *build
+
   build_TORTOISE:
     environment:
       VERSION_TAG: "TAG_TORTOISE"
       IMG_NAME: "qsiprep-drbuddi"
       BUILD_FILE: "Dockerfile_TORTOISE"
+    <<: *build
+
+  build_TORTOISECUDA:
+    environment:
+      VERSION_TAG: "TAG_TORTOISECUDA"
+      IMG_NAME: "qsiprep-drbuddicuda"
+      BUILD_FILE: "Dockerfile_TORTOISEcuda"
     <<: *build
 
   build:
@@ -125,7 +139,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-         version: 19.03.12
+         version: docker24
 
       - run:
           name: Build with FSL and push
@@ -147,7 +161,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-         version: 19.03.12
+         version: docker24
 
       - run:
           name: Build without FSL and push
@@ -205,12 +219,19 @@ workflows:
             tags:
               only: /.*/
 
-      - build_Miniconda:
+      - build_Micromamba:
           filters:
             tags:
               only: /.*/
 
       - build_TORTOISE:
+          requires:
+            - build_ANTs
+          filters:
+            tags:
+              only: /.*/
+
+      - build_TORTOISECUDA:
           requires:
             - build_ANTs
           filters:
@@ -225,9 +246,10 @@ workflows:
             - build_MRtrix3
             - build_DSIStudio
             - build_ANTs
-            - build_Miniconda
+            - build_Micromamba
             - build_AFNI
             - build_TORTOISE
+            - build_TORTOISECUDA
           filters:
             tags:
               only: /.*/

@@ -1,0 +1,20 @@
+FROM nvidia/cuda:11.2.2-devel-ubuntu18.04
+ARG TAG_ANTS
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    wget \
+    bzip2
+
+WORKDIR /
+RUN echo "2024.02.06"
+RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+
+ENV MAMBA_ROOT_PREFIX="/opt/conda" \
+MAMBA_NO_LOW_SPEED_LIMIT=1
+COPY fsl.yml /tmp/fsl.yml
+WORKDIR /tmp
+RUN micromamba create -y -f /tmp/fsl.yml
+RUN micromamba clean -y -a
