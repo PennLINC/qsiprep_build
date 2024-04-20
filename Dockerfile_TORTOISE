@@ -43,7 +43,7 @@ RUN \
   && cmake . \
       -DCMAKE_C_COMPILER=/usr/bin/gcc-9 \
       -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 \
-      -DUSECUDA=1 \
+      -DUSECUDA=0 \
       -DQSIPREP=1 \
       -DITK_DIR=/tmp/ants/build/ITKv5-build \
       -DISDEBUG=0 \
