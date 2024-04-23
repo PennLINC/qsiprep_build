@@ -34,12 +34,13 @@ RUN \
   && ./b2 install
 
 
-ARG TORTOISE_SHA=5490b642f54f086f399d2771330e883f09f92834
+ARG TORTOISE_SHA=5d0c688e85fd12a974d2ecbd8b567913a0b46c4f
 RUN \
   cd /src \
   && git clone https://github.com/eurotomania/TORTOISEV4.git \
   && cd TORTOISEV4/TORTOISEV4 \
   && git checkout ${TORTOISE_SHA} \
+  && sed -i '/BrukerBmatToTORTOISEBMTXT/d' CMakeLists.txt \
   && cmake . \
       -DCMAKE_C_COMPILER=/usr/bin/gcc-9 \
       -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 \
