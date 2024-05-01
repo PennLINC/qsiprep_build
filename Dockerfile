@@ -73,7 +73,7 @@ ENV PATH="$PATH:/opt/mrtrix3-latest/bin:/opt/3Tissue/bin" \
 ## Freesurfer
 COPY --from=build_freesurfer /opt/freesurfer /opt/freesurfer
 # Simulate SetUpFreeSurfer.sh
-ENV FSL_DIR="/opt/fsl-6.0.5.1" \
+ENV FSL_DIR="/opt/conda/envs/fslqsiprep" \
     OS="Linux" \
     FS_OVERRIDE=0 \
     FIX_VERTEX_AREA="" \
