@@ -253,6 +253,9 @@ RUN bash -c \
     && tar xvfJm 40f2m6dzzd8co5jx3cxpgct3zkkwm5d3.xz \
     && rm 40f2m6dzzd8co5jx3cxpgct3zkkwm5d3.xz'
 
+# Download the PyAFQ atlases
+RUN pyAFQ download
+
 # Make singularity mount directories
 RUN  mkdir -p /sngl/data \
   && mkdir /sngl/qsiprep-output \
