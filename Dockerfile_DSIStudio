@@ -40,8 +40,8 @@ RUN apt update && apt full-upgrade -y && \
 SHELL ["/bin/bash", "-c"]
 ENV PATH="$PATH:/opt/qt512/bin"
 
-ARG DSI_SHA=b7b1f10d6c9599983352050a923a10da4888a30c
-ARG TIPL_SHA=3e2a371f47a994d162055675617d7488895eca2a
+ARG DSI_SHA=9d1b255879f248de1a57adeb448bcdc4c317395e
+ARG TIPL_SHA=56907d522a788e399176d4d0b0764a7bf2f90044
 
 RUN source /opt/qt512/bin/qt512-env.sh \
   && mkdir /opt/dsi-studio \
