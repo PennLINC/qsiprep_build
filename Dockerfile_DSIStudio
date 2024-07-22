@@ -40,8 +40,8 @@ RUN apt update && apt full-upgrade -y && \
 SHELL ["/bin/bash", "-c"]
 ENV PATH="$PATH:/opt/qt512/bin"
 
-ARG DSI_SHA=9d1b255879f248de1a57adeb448bcdc4c317395e
-ARG TIPL_SHA=56907d522a788e399176d4d0b0764a7bf2f90044
+ARG DSI_SHA=03476a67bc96a1d0c90928001b5dd1c490539ee0
+ARG TIPL_SHA=ebd2d8b1ee13d6f87e78db62f2f1a1400b353898
 
 RUN source /opt/qt512/bin/qt512-env.sh \
   && mkdir /opt/dsi-studio \
@@ -57,8 +57,8 @@ RUN source /opt/qt512/bin/qt512-env.sh \
   && mkdir build && cd build \
   && qmake ../src && make -j 1
 
-ARG ATLAS_SHA=e4c2549c42f1858913de7269eac827cc64ae3d29
-ARG UNET_SHA=68621730186b9ac18d4610324aecfb7b9196a9fb
+ARG ATLAS_SHA=bf5afab9b2405f076b1acdf4706c9688525eb713
+ARG UNET_SHA=2e839aae744883983974194dcf6aeff154a82197
 
 RUN cd /opt/dsi-studio \
   && mv build/dsi_studio . \
