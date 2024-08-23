@@ -228,30 +228,16 @@ ENV \
 
 WORKDIR /root/
 
-# Precaching atlases + AtlasPack
-RUN mkdir /AtlasPack
-COPY --from=atlaspack /AtlasPack/tpl-fsLR_*.dlabel.nii /AtlasPack/
-COPY --from=atlaspack /AtlasPack/tpl-MNI152NLin6Asym_*.nii.gz /AtlasPack/
-COPY --from=atlaspack /AtlasPack/tpl-MNI152NLin2009cAsym_*.nii.gz /AtlasPack/
-COPY --from=atlaspack /AtlasPack/atlas-4S*.tsv /AtlasPack/
-COPY --from=atlaspack /AtlasPack/*.json /AtlasPack/
-ADD docker/scripts/get_templates.sh get_templates.sh
-RUN mkdir $CRN_SHARED_DATA && \
-    /root/get_templates.sh && \
-    chmod -R a+rX $CRN_SHARED_DATA
+# Precaching templates
+COPY scripts/fetch_templates.py fetch_templates.py
+RUN python fetch_templates.py && \
+    rm fetch_templates.py && \
+    find $HOME/.cache/templateflow -type d -exec chmod go=u {} + && \
+    find $HOME/.cache/templateflow -type f -exec chmod go=u {} +
 
 # Make it ok for singularity on CentOS
 RUN strip --remove-section=.note.ABI-tag /opt/qt512/lib/libQt5Core.so.5.12.8 \
     && ldconfig
-
-# Download the atlases
-ENV QSIRECON_ATLAS /atlas/qsirecon_atlases
-RUN bash -c \
-    'mkdir /atlas \
-    && cd  /atlas \
-    && wget -nv https://upenn.box.com/shared/static/40f2m6dzzd8co5jx3cxpgct3zkkwm5d3.xz \
-    && tar xvfJm 40f2m6dzzd8co5jx3cxpgct3zkkwm5d3.xz \
-    && rm 40f2m6dzzd8co5jx3cxpgct3zkkwm5d3.xz'
 
 # Download the PyAFQ atlases
 RUN pyAFQ download
