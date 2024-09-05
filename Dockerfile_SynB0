@@ -1,0 +1,10 @@
+FROM leonyichencai/synb0-disco:v3.1 as synb0
+FROM ubuntu:18.04
+ARG TAG_ANTS
+
+# Get the SyNb0 models
+COPY --from=synb0 /extra/dual_channel_unet /opt/synb0/dual_channel_unet
+COPY --from=synb0 /extra/atlas /opt/synb0/atlas
+
+
+

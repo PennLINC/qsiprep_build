@@ -34,3 +34,7 @@ COPY --from=freesurfer \
 COPY --from=freesurfer \
   /usr/local/freesurfer/python/scripts/mri_synthstrip  \
   /opt/freesurfer/bin/mri_synthstrip
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/python/scripts/mri_normalize  \
+  /opt/freesurfer/bin/mri_normalize
