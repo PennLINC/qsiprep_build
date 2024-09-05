@@ -130,6 +130,13 @@ jobs:
       BUILD_FILE: "Dockerfile_TORTOISEcuda"
     <<: *build
 
+  build_SYNB0:
+    environment:
+      VERSION_TAG: "TAG_SYNB0"
+      IMG_NAME: "qsiprep-synb0"
+      BUILD_FILE: "Dockerfile_SynB0"
+    <<: *build
+
   build:
     environment:
       TZ: "/usr/share/zoneinfo/America/New_York"
@@ -224,6 +231,11 @@ workflows:
             tags:
               only: /.*/
 
+      - build_SYNB0:
+          filters:
+            tags:
+              only: /.*/
+
       - build_TORTOISE:
           requires:
             - build_ANTs
@@ -250,6 +262,7 @@ workflows:
             - build_AFNI
             - build_TORTOISE
             - build_TORTOISECUDA
+            - build_SYNB0
           filters:
             tags:
               only: /.*/
