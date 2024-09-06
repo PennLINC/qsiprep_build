@@ -64,7 +64,7 @@ COPY --from=freesurfer \
 
 COPY --from=freesurfer \
   /lib64/libcrypt* \
-  /opt/freesurfer/mni/lib
+  /opt/freesurfer/lib/
 
 COPY --from=freesurfer \
   /usr/local/freesurfer/sources.csh \
