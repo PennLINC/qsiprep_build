@@ -58,6 +58,14 @@ COPY --from=freesurfer \
   /usr/local/freesurfer/bin/mri_normalize  \
   /opt/freesurfer/bin/mri_normalize
 
-  COPY --from=freesurfer \
+COPY --from=freesurfer \
   /usr/local/freesurfer/mni  \
   /opt/freesurfer/mni
+
+COPY --from=freesurfer \
+  /lib64/libcrypt* \
+  /opt/freesurfer/mni/lib
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/sources.csh \
+  /opt/freesurfer/sources.csh
