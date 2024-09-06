@@ -237,10 +237,6 @@ COPY --from=atlaspack /AtlasPack/tpl-MNI152NLin6Asym_*.nii.gz /AtlasPack/
 COPY --from=atlaspack /AtlasPack/tpl-MNI152NLin2009cAsym_*.nii.gz /AtlasPack/
 COPY --from=atlaspack /AtlasPack/atlas-4S*.tsv /AtlasPack/
 COPY --from=atlaspack /AtlasPack/*.json /AtlasPack/
-ADD docker/scripts/get_templates.sh get_templates.sh
-RUN mkdir $CRN_SHARED_DATA && \
-    /root/get_templates.sh && \
-    chmod -R a+rX $CRN_SHARED_DATA
 
 # Make it ok for singularity on CentOS
 RUN strip --remove-section=.note.ABI-tag /opt/qt512/lib/libQt5Core.so.5.12.8 \
@@ -254,11 +250,6 @@ RUN bash -c \
     && wget -nv https://upenn.box.com/shared/static/40f2m6dzzd8co5jx3cxpgct3zkkwm5d3.xz \
     && tar xvfJm 40f2m6dzzd8co5jx3cxpgct3zkkwm5d3.xz \
     && rm 40f2m6dzzd8co5jx3cxpgct3zkkwm5d3.xz'
-
-# Download the PyAFQ atlases
-RUN pyAFQ download
-
-
 
 # Make singularity mount directories
 RUN  mkdir -p /sngl/data \
