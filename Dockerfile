@@ -94,6 +94,10 @@ ENV PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5" \
     FREESURFER_DEPS="bc ca-certificates curl libgomp1 libxmu6 libxt6 tcsh perl"
 RUN chmod a+rx /opt/freesurfer/bin/mri_synthseg /opt/freesurfer/bin/mri_synthstrip
 
+# SynB0-DISCO
+COPY --from=build_synb0 /opt/synb0 /opt/synb0
+ENV SYNB0_ATLASES=/opt/synb0/atlases
+
 ## AFNI
 COPY --from=build_afni /opt/afni-latest /opt/afni-latest
 ENV PATH="$PATH:/opt/afni-latest" \
@@ -245,7 +249,6 @@ RUN  mkdir -p /sngl/data \
   && mkdir /sngl/qsiprep-output \
   && mkdir /sngl/out \
   && mkdir /sngl/scratch \
-  && mkdir /sngl/spec \
   && mkdir /sngl/eddy \
   && mkdir /sngl/filter \
   && chmod a+rwx /sngl/*
