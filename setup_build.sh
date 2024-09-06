@@ -9,7 +9,7 @@ export BUILD_TAG
 
 # Versions of the components
 export TAG_FSL=24.4.24
-export TAG_FREESURFER=23.3.0
+export TAG_FREESURFER=24.9.2
 export TAG_ANTS=24.4.24
 export TAG_MRTRIX3=24.4.24
 export TAG_3TISSUE=24.4.24
@@ -18,6 +18,7 @@ export TAG_MICROMAMBA=24.7.1
 export TAG_AFNI=23.3.2
 export TAG_TORTOISE=24.4.29
 export TAG_TORTOISECUDA=24.4.29
+export TAG_SYNB0=24.9.0
 
 echo "Settings:"
 echo "----------"
@@ -33,6 +34,7 @@ echo "TAG_MICROMAMBA=${TAG_MICROMAMBA}"
 echo "TAG_AFNI=${TAG_AFNI}"
 echo "TAG_TORTOISE=${TAG_TORTOISE}"
 echo "TAG_TORTOISECUDA=${TAG_TORTOISECUDA}"
+echo "TAG_SYNB0=${TAG_SYNB0}"
 
 
 do_build() {
@@ -57,6 +59,7 @@ do_build() {
         --build-arg TAG_MICROMAMBA=${TAG_MICROMAMBA} \
         --build-arg TAG_AFNI=${TAG_AFNI} \
         --build-arg TAG_TORTOISE=${TAG_TORTOISE} \
+        --build-arg TAG_SYNB0=${TAG_SYNB0} \
         --build-arg TAG_TORTOISECUDA=${TAG_TORTOISECUDA} \
         --build-arg FSL_BUILD=${INCLUDE_FSL} \
         .

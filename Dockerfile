@@ -8,6 +8,7 @@ ARG TAG_MICROMAMBA
 ARG TAG_AFNI
 ARG TAG_TORTOISE
 ARG TAG_TORTOISECUDA
+ARG TAG_SYNB0
 
 # TO include FSL set --build-arg FSL_BUILD=build_fsl
 # To skip it set --build-arg FSL_BUILD=no_fsl
@@ -24,6 +25,7 @@ FROM pennbbl/qsiprep-micromamba:${TAG_MICROMAMBA} as build_micromamba
 FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
 FROM pennbbl/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
+FROM pennbbl/qsiprep-synb0:${TAG_SYNB0} as build_synb0
 FROM pennlinc/atlaspack:0.1.0 as atlaspack
 FROM nvidia/cuda:11.1.1-runtime-ubuntu18.04 as ubuntu
 
@@ -228,7 +230,6 @@ ENV \
 
 WORKDIR /root/
 
-# Precaching templates
 COPY scripts/fetch_templates.py fetch_templates.py
 RUN python fetch_templates.py && \
     rm fetch_templates.py && \
@@ -238,9 +239,6 @@ RUN python fetch_templates.py && \
 # Make it ok for singularity on CentOS
 RUN strip --remove-section=.note.ABI-tag /opt/qt512/lib/libQt5Core.so.5.12.8 \
     && ldconfig
-
-# Download the PyAFQ atlases
-RUN pyAFQ download
 
 # Make singularity mount directories
 RUN  mkdir -p /sngl/data \

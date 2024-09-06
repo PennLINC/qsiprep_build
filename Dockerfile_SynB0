@@ -1,0 +1,21 @@
+FROM leonyichencai/synb0-disco:v3.1 AS synb0
+FROM ubuntu:18.04 AS base
+ARG TAG_ANTS
+
+FROM alpine AS builder
+RUN mkdir -p /opt/synb0 \
+  && cd /opt/synb0 \
+  && wget https://raw.githubusercontent.com/MASILab/Synb0-DISCO/master/synb0-license-ccby4.0.txt
+
+FROM base 
+# Get the SyNb0 models and python executables
+COPY --from=synb0 /extra/dual_channel_unet /opt/synb0/dual_channel_unet
+COPY --from=synb0 /extra/atlases /opt/synb0/atlases
+COPY --from=synb0 /extra/inference.py /opt/synb0/inference.py
+COPY --from=synb0 /extra/model.py /opt/synb0/model.py
+COPY --from=synb0 /extra/util.py /opt/synb0/util.py
+COPY --from=synb0 /extra/synb0.cnf /opt/synb0/synb0.cnf
+COPY --from=builder /opt/synb0/synb0-license-ccby4.0.txt /opt/synb0/synb0-license-ccby4.0.txt
+
+RUN chmod +x /opt/synb0/inference.py
+

@@ -1,6 +1,18 @@
-FROM freesurfer/freesurfer:7.3.1 as freesurfer
+FROM freesurfer/freesurfer:7.3.1 AS freesurfer
 FROM ubuntu:18.04
 ARG TAG_ANTS
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/bin/mri_binarize  \
+  /opt/freesurfer/bin/mri_binarize
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/bin/mri_convert  \
+  /opt/freesurfer/bin/mri_convert
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/bin/mri_nu_correct.mni  \
+  /opt/freesurfer/bin/mri_nu_correct.mni
 
 COPY --from=freesurfer \
   /usr/local/freesurfer/bin/mri_rigid_register \
@@ -9,6 +21,14 @@ COPY --from=freesurfer \
 COPY --from=freesurfer \
   /usr/local/freesurfer/bin/mri_robust_register  \
   /opt/freesurfer/bin/mri_robust_register
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/bin/mris_calc  \
+  /opt/freesurfer/bin/mris_calc
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/bin/mri_segstats  \
+  /opt/freesurfer/bin/mri_segstats
 
 COPY --from=freesurfer \
   /usr/local/freesurfer/bin/mri_robust_template \
@@ -22,7 +42,6 @@ COPY --from=freesurfer \
   /usr/local/freesurfer/bin/lta_diff  \
   /opt/freesurfer/bin/lta_diff
 
-
 COPY --from=freesurfer \
   /usr/local/freesurfer/python/scripts/mri_synthseg  \
   /opt/freesurfer/bin/mri_synthseg
@@ -34,3 +53,19 @@ COPY --from=freesurfer \
 COPY --from=freesurfer \
   /usr/local/freesurfer/python/scripts/mri_synthstrip  \
   /opt/freesurfer/bin/mri_synthstrip
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/bin/mri_normalize  \
+  /opt/freesurfer/bin/mri_normalize
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/mni  \
+  /opt/freesurfer/mni
+
+COPY --from=freesurfer \
+  /lib64/libcrypt* \
+  /opt/freesurfer/mni/lib
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/sources.csh \
+  /opt/freesurfer/sources.csh
