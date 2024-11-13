@@ -1,6 +1,6 @@
 ARG TAG_ANTS
 
-FROM pennbbl/qsiprep-ants:${TAG_ANTS} as base
+FROM pennlinc/qsiprep-ants:${TAG_ANTS} as base
 FROM base as builder
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 

@@ -43,11 +43,11 @@ build: &build
             --rm=false \
             -f ${BUILD_FILE} \
             --build-arg TAG_ANTS=${TAG_ANTS} \
-            -t pennbbl/${IMG_NAME}:${CIRCLE_TAG} .
+            -t pennlinc/${IMG_NAME}:${CIRCLE_TAG} .
 
           if [[ -n "$DOCKER_PASS" ]]; then
             docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push pennbbl/${IMG_NAME}:$CIRCLE_TAG
+            docker push pennlinc/${IMG_NAME}:$CIRCLE_TAG
           fi
 
 jobs:
@@ -156,7 +156,7 @@ jobs:
               source setup_build.sh
               do_build build_fsl
               docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker push pennbbl/qsiprep_build:$CIRCLE_TAG
+              docker push pennlinc/qsiprep_build:$CIRCLE_TAG
             fi
 
   build_nofsl:
@@ -178,7 +178,7 @@ jobs:
               source setup_build.sh
               do_build no_fsl
               docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker push pennbbl/qsiprep_build:${CIRCLE_TAG}-nofsl
+              docker push pennlinc/qsiprep_build:${CIRCLE_TAG}-nofsl
             fi
 
   deployable:
