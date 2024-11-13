@@ -26,7 +26,7 @@ FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
 FROM pennbbl/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
 FROM pennbbl/qsiprep-synb0:${TAG_SYNB0} as build_synb0
-FROM pennbbl/atlaspack:0.1.0 as atlaspack
+FROM pennlinc/atlaspack:0.1.0 as atlaspack
 FROM nvidia/cuda:11.1.1-runtime-ubuntu18.04 as ubuntu
 
 # Make a dummy fsl image containing no FSL
