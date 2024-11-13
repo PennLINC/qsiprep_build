@@ -15,18 +15,18 @@ ARG TAG_SYNB0
 ARG FSL_BUILD
 
 # COPY can't handle variables, so here we go
-FROM pennlinc/qsiprep-fsl:${TAG_FSL} as build_fsl
-FROM pennlinc/qsiprep-freesurfer:${TAG_FREESURFER} as build_freesurfer
-FROM pennlinc/qsiprep-ants:${TAG_ANTS} as build_ants
-FROM pennlinc/qsiprep-mrtrix3:${TAG_MRTRIX3} as build_mrtrix3
-FROM pennlinc/qsiprep-3tissue:${TAG_3TISSUE} as build_3tissue
-FROM pennlinc/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
-FROM pennlinc/qsiprep-micromamba:${TAG_MICROMAMBA} as build_micromamba
-FROM pennlinc/qsiprep-afni:${TAG_AFNI} as build_afni
-FROM pennlinc/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
-FROM pennlinc/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
-FROM pennlinc/qsiprep-synb0:${TAG_SYNB0} as build_synb0
-FROM pennlinc/atlaspack:0.1.0 as atlaspack
+FROM pennbbl/qsiprep-fsl:${TAG_FSL} as build_fsl
+FROM pennbbl/qsiprep-freesurfer:${TAG_FREESURFER} as build_freesurfer
+FROM pennbbl/qsiprep-ants:${TAG_ANTS} as build_ants
+FROM pennbbl/qsiprep-mrtrix3:${TAG_MRTRIX3} as build_mrtrix3
+FROM pennbbl/qsiprep-3tissue:${TAG_3TISSUE} as build_3tissue
+FROM pennbbl/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
+FROM pennbbl/qsiprep-micromamba:${TAG_MICROMAMBA} as build_micromamba
+FROM pennbbl/qsiprep-afni:${TAG_AFNI} as build_afni
+FROM pennbbl/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
+FROM pennbbl/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
+FROM pennbbl/qsiprep-synb0:${TAG_SYNB0} as build_synb0
+FROM pennbbl/atlaspack:0.1.0 as atlaspack
 FROM nvidia/cuda:11.1.1-runtime-ubuntu18.04 as ubuntu
 
 # Make a dummy fsl image containing no FSL
