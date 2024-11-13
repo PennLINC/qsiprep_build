@@ -49,7 +49,7 @@ do_build() {
     DOCKER_BUILDKIT=1 \
     BUILDKIT_PROGRESS=plain \
     docker build -t \
-        pennbbl/qsiprep_build:${THIS_TAG} \
+        pennlinc/qsiprep_build:${THIS_TAG} \
         --build-arg TAG_FSL=${TAG_FSL} \
         --build-arg TAG_FREESURFER=${TAG_FREESURFER} \
         --build-arg TAG_ANTS=${TAG_ANTS} \

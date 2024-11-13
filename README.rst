@@ -1,14 +1,14 @@
 .. include:: links.rst
 
-QSIprep: Preprocessing and analysis of q-space images
-=======================================================
+QSIPrep: Preprocessing and analysis of q-space images
+=====================================================
 
-.. image:: https://readthedocs.org/projects/qsiprep/badge/?version=latest
-  :target: http://qsiprep.readthedocs.io/en/latest/?badge=latest
-  :alt: Documentation Status
+.. image:: https://circleci.com/gh/PennLINC/qsiprep_build/tree/master.svg?style=svg
+  :target: https://circleci.com/gh/PennLINC/qsiprep_build/tree/master
 
-.. image:: https://circleci.com/gh/PennLINC/qsiprep/tree/master.svg?style=svg
-  :target: https://circleci.com/gh/PennLINC/qsiprep/tree/master
+.. image:: https://img.shields.io/badge/docker-pennlinc/qsiprep_build-brightgreen.svg?logo=docker&style=flat
+  :target: https://hub.docker.com/r/pennlinc/qsiprep_build/tags/
+  :alt: Docker
 
 
 Full documentation at https://qsiprep.readthedocs.io
@@ -27,7 +27,7 @@ The main features of this software are
      from Dipy_, MRTrix_, `DSI Studio`_  and others.
   4. A novel motion correction algorithm that works on DSI and random q-space sampling schemes
 
-.. image:: https://github.com/PennBBL/qsiprep/raw/master/docs/_static/workflow_full.png
+.. image:: https://github.com/PennLINC/qsiprep/raw/master/docs/_static/workflow_full.png
 
 
 .. _preprocessing_def:
