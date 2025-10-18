@@ -1,4 +1,4 @@
-FROM freesurfer/freesurfer:7.3.1 AS freesurfer
+FROM freesurfer/freesurfer:7.4.1 AS freesurfer
 FROM ubuntu:18.04
 ARG TAG_ANTS
 
