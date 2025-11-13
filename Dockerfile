@@ -27,7 +27,7 @@ FROM pennlinc/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
 FROM pennlinc/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
 FROM pennlinc/qsiprep-synb0:${TAG_SYNB0} as build_synb0
 FROM pennlinc/atlaspack:0.1.0 as atlaspack
-FROM nvidia/13.0.2-runtime-ubuntu22.04 as ubuntu
+FROM nvidia/12.2.2-runtime-ubuntu22.04 as ubuntu
 
 # Make a dummy fsl image containing no FSL
 FROM ubuntu as no_fsl
