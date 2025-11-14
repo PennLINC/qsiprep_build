@@ -58,9 +58,7 @@ ENV ANTSPATH="/opt/ants/bin" \
     ANTS_DEPS="zlib1g-dev"
 
 ## DSI Studio
-ENV LD_LIBRARY_PATH="$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" \
-    PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
-    PATH="$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio-cpu/dsi_studio" \
+ENV PATH="$PATH:/opt/dsi-studio-cpu" \
     DSI_STUDIO_DEPS="qt6-base-dev libqt6charts6-dev"
 
 ## MRtrix3
@@ -193,7 +191,7 @@ RUN apt-get update \
     && apt install -y --no-install-recommends \
     ${DSI_STUDIO_DEPS} ${MRTRIX3_DEPS} ${TORTOISE_DEPS} wget git binutils \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-COPY --from=build_dsistudio /opt/dsi-studio-cpu/dsi_studio /opt/dsi-studio-cpu/dsi_studio
+COPY --from=build_dsistudio /opt/dsi-studio-cpu /opt/dsi-studio-cpu
 
 # Install gcc-9
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
@@ -220,10 +218,6 @@ ENV \
     IS_DOCKER_8395080871=1 \
     ARTHOME="/opt/art" \
     DIPY_HOME=/home/qsiprep/.dipy \
-    QTDIR=$QT_BASE_DIR \
-    PATH=$QT_BASE_DIR/bin:$PATH \
-    LD_LIBRARY_PATH=$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH \
-    PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH \
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/conda/envs/qsiprep/lib/python3.10/site-packages/nvidia/cudnn/lib:/opt/freesurfer/lib
 
 WORKDIR /root/
