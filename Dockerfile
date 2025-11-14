@@ -24,7 +24,7 @@ FROM pennlinc/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
 FROM pennlinc/qsiprep-micromamba:${TAG_MICROMAMBA} as build_micromamba
 FROM pennlinc/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennlinc/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
-FROM pennlinc/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
+FROM pennlinc/qsiprep-drbuddicuda:${TAG_TORTOISECUDA} as build_tortoisecuda
 FROM pennlinc/qsiprep-synb0:${TAG_SYNB0} as build_synb0
 FROM pennlinc/atlaspack:0.1.0 as atlaspack
 FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 as ubuntu
