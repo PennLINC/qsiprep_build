@@ -27,7 +27,7 @@ FROM pennlinc/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
 FROM pennlinc/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
 FROM pennlinc/qsiprep-synb0:${TAG_SYNB0} as build_synb0
 FROM pennlinc/atlaspack:0.1.0 as atlaspack
-FROM nvidia/12.2.2-runtime-ubuntu22.04 as ubuntu
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 as ubuntu
 
 # Make a dummy fsl image containing no FSL
 FROM ubuntu as no_fsl
@@ -58,12 +58,10 @@ ENV ANTSPATH="/opt/ants/bin" \
     ANTS_DEPS="zlib1g-dev"
 
 ## DSI Studio
-ENV QT_BASE_DIR="/opt/qt512"
-ENV QTDIR="$QT_BASE_DIR" \
-    LD_LIBRARY_PATH="$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" \
+ENV LD_LIBRARY_PATH="$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" \
     PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
-    PATH="$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio" \
-    DSI_STUDIO_DEPS="qt512base qt512charts-no-lgpl"
+    PATH="$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio-cpu/dsi_studio" \
+    DSI_STUDIO_DEPS="qt6-base-dev libqt6charts6-dev"
 
 ## MRtrix3
 COPY --from=build_mrtrix3 /opt/mrtrix3-latest /opt/mrtrix3-latest
@@ -107,7 +105,6 @@ ENV PATH="$PATH:/opt/afni-latest" \
 ## TORTOISE
 COPY --from=build_tortoise /src/TORTOISEV4/bin /src/TORTOISEV4/bin
 COPY --from=build_tortoise /src/TORTOISEV4/settings /src/TORTOISEV4/settings
-COPY --from=build_tortoise /usr/local/boost176 /usr/local/boost176
 COPY --from=build_tortoisecuda /src/TORTOISEV4/bin/*cuda /src/TORTOISEV4/bin/
 ENV PATH="$PATH:/src/TORTOISEV4/bin" \
     TORTOISE_DEPS="fftw3"
@@ -140,6 +137,7 @@ RUN apt-get update -qq \
            libxm4 \
            libxmu6 \
            libxt6 \
+           libboost-all-dev \
            perl \
            libtiff5 \
            netpbm \
@@ -153,9 +151,6 @@ RUN apt-get update -qq \
     && curl -sSL --retry 5 -o /tmp/libxp6.deb https://upenn.box.com/shared/static/reyyundn0l3guvjzghrrv6t4w6md2tjd.deb \
     && dpkg -i /tmp/libxp6.deb \
     && rm /tmp/libxp6.deb \
-    && curl -sSL --retry 5 -o /tmp/libpng.deb http://snapshot.debian.org/archive/debian-security/20160113T213056Z/pool/updates/main/libp/libpng/libpng12-0_1.2.49-1%2Bdeb7u2_amd64.deb \
-    && dpkg -i /tmp/libpng.deb \
-    && rm /tmp/libpng.deb \
     && apt-get install -f --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
@@ -193,13 +188,12 @@ RUN curl -o pandoc-2.2.2.1-1-amd64.deb -sSL "https://github.com/jgm/pandoc/relea
     dpkg -i pandoc-2.2.2.1-1-amd64.deb && \
     rm pandoc-2.2.2.1-1-amd64.deb
 
-# Install qt5.12.8
-RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
-    && apt-get update \
+# Install qt6
+RUN apt-get update \
     && apt install -y --no-install-recommends \
     ${DSI_STUDIO_DEPS} ${MRTRIX3_DEPS} ${TORTOISE_DEPS} wget git binutils \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
+COPY --from=build_dsistudio /opt/dsi-studio-cpu/dsi_studio /opt/dsi-studio-cpu/dsi_studio
 
 # Install gcc-9
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
@@ -241,8 +235,9 @@ RUN python fetch_templates.py && \
     find $HOME/.cache/templateflow -type f -exec chmod go=u {} +
 
 # Make it ok for singularity on CentOS
-RUN strip --remove-section=.note.ABI-tag /opt/qt512/lib/libQt5Core.so.5.12.8 \
-    && ldconfig
+RUN for lib in /usr/lib/x86_64-linux-gnu/libQt?Core.so.* ; do \
+      strip --remove-section=.note.ABI-tag "$lib" 2>/dev/null || true ; \
+    done && ldconfig
 
 # Make singularity mount directories
 RUN  mkdir -p /sngl/data \

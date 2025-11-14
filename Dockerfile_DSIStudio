@@ -1,10 +1,9 @@
-FROM nvidia/cuda:11.2.2-devel-ubuntu18.04
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04
 ARG TAG_ANTS
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub
 
 RUN apt update && apt full-upgrade -y && \
   apt install --no-install-recommends -y software-properties-common && \
-  add-apt-repository -y ppa:beineri/opt-qt-5.12.8-bionic && \
   add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
   apt install -y --no-install-recommends \
   unzip \
@@ -15,8 +14,8 @@ RUN apt update && apt full-upgrade -y && \
   libboost-all-dev \
   zlib1g-dev \
   ca-certificates \
-  qt512base \
-  qt512charts-no-lgpl \
+  qt6-base-dev \
+  libqt6charts6-dev \
   mesa-common-dev \
   libglu1-mesa-dev \
   build-essential \
@@ -31,47 +30,27 @@ RUN apt update && apt full-upgrade -y && \
   apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
   RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
-  | apt-key add - \
-&& apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ bionic main' \
-&& apt-get update \
-&& apt-get -y install cmake=3.23.2-0kitware1ubuntu18.04.1 cmake-data=3.23.2-0kitware1ubuntu18.04.1
-
+    | apt-key add - \
+  && apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ jammy main' \
+  && apt-get update \
+  && apt-get -y install cmake=3.30.2-0kitware1ubuntu22.04.1 \
+    cmake-data=3.30.2-0kitware1ubuntu22.04.1
 #Need to use a different shell so the QT ENV script works
 SHELL ["/bin/bash", "-c"]
-ENV PATH="$PATH:/opt/qt512/bin"
 
-ARG DSI_SHA=03476a67bc96a1d0c90928001b5dd1c490539ee0
-ARG TIPL_SHA=ebd2d8b1ee13d6f87e78db62f2f1a1400b353898
+ARG DSI_DATE=2025.04.16
 
-RUN source /opt/qt512/bin/qt512-env.sh \
-  && mkdir /opt/dsi-studio \
-  && cd /opt/dsi-studio \
-  && curl -sSLO https://github.com/frankyeh/DSI-Studio/archive/${DSI_SHA}.zip \
-  && unzip ${DSI_SHA}.zip \
-  && mv DSI-Studio-${DSI_SHA} src \
-  && rm -rf ${DSI_SHA}.zip \
+ARG TIPL_SHA=1f89c676df1e3577fe524833d2e67063eebb24f3
+
+RUN cd /opt/ \
+  && curl -sSLO https://github.com/frankyeh/DSI-Studio/releases/download/${DSI_DATE}/dsi_studio_ubuntu2204_cpu.zip \
+  && unzip dsi_studio_ubuntu2204_cpu.zip \
+  && rm -rf dsi_studio_ubuntu2204_cpu.zip \
   && curl -sSLO https://github.com/frankyeh/TIPL/archive/${TIPL_SHA}.zip \
   && unzip ${TIPL_SHA}.zip \
-  && mv TIPL-${TIPL_SHA} src/TIPL \
+  && mv TIPL-${TIPL_SHA} dsi-studio-cpu/TIPL \
   && rm ${TIPL_SHA}.zip \
-  && mkdir build && cd build \
-  && qmake ../src && make -j 1
+  && chmod 755 dsi-studio-cpu/dsi_studio
 
-ARG ATLAS_SHA=bf5afab9b2405f076b1acdf4706c9688525eb713
-ARG UNET_SHA=2e839aae744883983974194dcf6aeff154a82197
+ENV PATH="$PATH:/opt/dsi-studio-cpu"
 
-RUN cd /opt/dsi-studio \
-  && mv build/dsi_studio . \
-  && chmod 755 dsi_studio \
-  && cp -R src/other/* . \
-  && rm -rf src build \
-  && curl -sSLO https://github.com/frankyeh/UNet-Studio-Data/archive/${UNET_SHA}.zip \
-  && unzip ${UNET_SHA}.zip \
-  && rm ${UNET_SHA}.zip \
-  && mv UNet-Studio-Data-${UNET_SHA}/network/ . \
-  && rm -rf mv UNet-Studio-Data-${UNET_SHA} \
-  && curl -sSLO https://github.com/frankyeh/DSI-Studio-atlas/archive/${ATLAS_SHA}.zip \
-  && unzip ${ATLAS_SHA}.zip \
-  && rm -rf DSI-Studio-atlas-${ATLAS_SHA}/.git \
-  && mv DSI-Studio-atlas-${ATLAS_SHA} atlas \
-  && rm ${ATLAS_SHA}.zip
