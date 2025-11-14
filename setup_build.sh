@@ -8,17 +8,17 @@ fi
 export BUILD_TAG
 
 # Versions of the components
-export TAG_FSL=24.4.24
-export TAG_FREESURFER=24.9.3
-export TAG_ANTS=24.4.24
-export TAG_MRTRIX3=24.4.24
-export TAG_3TISSUE=24.4.24
-export TAG_DSISTUDIO=24.7.4
-export TAG_MICROMAMBA=24.7.1
-export TAG_AFNI=23.3.2
-export TAG_TORTOISE=24.4.29
-export TAG_TORTOISECUDA=24.4.29
-export TAG_SYNB0=24.9.0
+export TAG_FSL=25.11.14
+export TAG_FREESURFER=25.11.14
+export TAG_ANTS=25.11.14
+export TAG_MRTRIX3=25.11.14
+export TAG_3TISSUE=25.11.14
+export TAG_DSISTUDIO=25.11.14
+export TAG_MICROMAMBA=25.11.14
+export TAG_AFNI=25.11.14
+export TAG_TORTOISE=25.11.14
+export TAG_TORTOISECUDA=25.11.14
+export TAG_SYNB0=25.11.14
 
 echo "Settings:"
 echo "----------"
