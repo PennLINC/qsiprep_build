@@ -2,7 +2,7 @@ ARG TAG_ANTS
 
 FROM pennlinc/qsiprep-ants:${TAG_ANTS} as base
 FROM base as builder
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub
 
 RUN apt update && apt full-upgrade -y && \
   apt install --no-install-recommends -y software-properties-common && \
@@ -17,26 +17,17 @@ RUN apt update && apt full-upgrade -y && \
 
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
     | apt-key add - \
-  && apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ bionic main' \
+  && apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ jammy main' \
   && apt-get update \
-  && apt-get -y install cmake=3.23.2-0kitware1ubuntu18.04.1 cmake-data=3.23.2-0kitware1ubuntu18.04.1
+  && apt-get -y install cmake=3.30.2-0kitware1ubuntu22.04.1 \
+    cmake-data=3.30.2-0kitware1ubuntu22.04.1
 
+RUN apt install -y libboost-all-dev
 
+ARG TORTOISE_SHA=cea83b5bef845b54c079072f385a087768a60ded
 RUN \
   mkdir /src \
   && cd /src \
-  && wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz \
-  && tar -xvf boost_1_77_0.tar.gz \
-  && cd boost_1_77_0 \
-  && rm /usr/bin/g++ \
-  && ln -s /usr/bin/g++-9 /usr/bin/g++ \
-  && ./bootstrap.sh --with-libraries=iostreams,filesystem,system,regex --prefix=/usr/local/boost176 \
-  && ./b2 install
-
-
-ARG TORTOISE_SHA=5d0c688e85fd12a974d2ecbd8b567913a0b46c4f
-RUN \
-  cd /src \
   && git clone https://github.com/eurotomania/TORTOISEV4.git \
   && cd TORTOISEV4/TORTOISEV4 \
   && git checkout ${TORTOISE_SHA} \

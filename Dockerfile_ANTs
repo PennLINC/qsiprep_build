@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.2.2-devel-ubuntu18.04 as base
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 as base
 ARG TAG_ANTS
 FROM base as builder
 
@@ -11,7 +11,6 @@ RUN apt-get update && \
                     gnupg \
                     software-properties-common \
                     wget \
-                    ninja-build \
                     git \
                     g++ \
                     zlib1g-dev \
@@ -24,10 +23,12 @@ RUN apt-get update && \
 
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
     | apt-key add - \
-  && apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ bionic main' \
+  && apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ jammy main' \
   && apt-get update \
-  && apt-get -y install cmake=3.23.2-0kitware1ubuntu18.04.1 cmake-data=3.23.2-0kitware1ubuntu18.04.1
+  && apt-get -y install cmake=3.30.2-0kitware1ubuntu22.04.1 \
+    cmake-data=3.30.2-0kitware1ubuntu22.04.1
 
+# Version 2.4.3 : last version using ITK 5.3
 ARG ANTS_SHA=caa60eb4ad53d561f9ddd72b71a6baf2acac0078
 RUN mkdir /tmp/ants \
     && cd /tmp \
@@ -40,8 +41,9 @@ RUN mkdir /tmp/ants \
     && mkdir -p /opt/ants \
     && git config --global url."https://".insteadOf git:// \
     && cmake \
-        -GNinja \
-        -DBUILD_TESTING=OFF \
+        -G "Unix Makefiles" \
+        -DBUILD_TESTING:BOOL=OFF \
+        -DBUILD_EXAMPLES:BOOL=OFF \
         -DCMAKE_C_COMPILER=/usr/bin/gcc-9 \
         -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 \
         -DBUILD_SHARED_LIBS=ON \
@@ -49,9 +51,9 @@ RUN mkdir /tmp/ants \
         -DSuperBuild_ANTS_CXX_OPTIMIZATION_FLAGS="-mtune=x86-64 -march=x86-64" \
         -DCMAKE_INSTALL_PREFIX=/opt/ants \
         /tmp/ants/source \
-    && cmake --build . --parallel 1 \
+    && make -j 1 \
     && cd ANTS-build \
-    && cmake --install . \
+    && make install \
     && cd /opt/ants/bin \
     && rm \
         ANTSUseLandmarkImagesToGetAffineTransform \
