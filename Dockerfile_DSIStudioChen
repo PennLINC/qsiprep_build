@@ -33,8 +33,14 @@ RUN apt-get update && apt-get full-upgrade -y && \
   update-alternatives --install /usr/bin/qmake qmake /usr/lib/qt5/bin/qmake 100 && \
   apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ARG DSI_SHA=03476a67bc96a1d0c90928001b5dd1c490539ee0
-ARG TIPL_SHA=ebd2d8b1ee13d6f87e78db62f2f1a1400b353898
+# This version of DSI Studio is the one used in Chen, which
+# we found was more accurate for infant autotrack.
+# It was the bundled version of DSI Studio in qsiprep 0.20.0,
+# which built off of pennbbl/qsiprep_build:24.1.4.
+# In that build TAG_DSISTUDIO was set to 23.7.1
+
+ARG DSI_SHA=8118e168f096c897dcc40f9ecc3ba72b1925cb7d
+ARG TIPL_SHA=485a9b140ee4544a1e9c9c084b9d1012ff0b1523
 
 RUN mkdir /opt/dsi-studio \
   && cd /opt/dsi-studio \
@@ -49,21 +55,13 @@ RUN mkdir /opt/dsi-studio \
   && mkdir build && cd build \
   && qmake ../src && make -j 1
 
-ARG ATLAS_SHA=bf5afab9b2405f076b1acdf4706c9688525eb713
-ARG UNET_SHA=2e839aae744883983974194dcf6aeff154a82197
+ARG ATLAS_SHA=e2e00a8a09cf735c1e6018c258f239586bd77d68
 
-RUN cd /opt/dsi-studio \
-  && mv build/dsi_studio . \
-  && chmod 755 dsi_studio \
-  && cp -R src/other/* . \
-  && rm -rf src build \
-  && curl -sSLO https://github.com/frankyeh/UNet-Studio-Data/archive/${UNET_SHA}.zip \
-  && unzip ${UNET_SHA}.zip \
-  && rm ${UNET_SHA}.zip \
-  && mv UNet-Studio-Data-${UNET_SHA}/network/ . \
-  && rm -rf UNet-Studio-Data-${UNET_SHA} \
+RUN mkdir -p /opt/dsi-studio/dsi_studio_64 \
+  && cd /opt/dsi-studio/dsi_studio_64 \
   && curl -sSLO https://github.com/frankyeh/DSI-Studio-atlas/archive/${ATLAS_SHA}.zip \
   && unzip ${ATLAS_SHA}.zip \
-  && rm -rf DSI-Studio-atlas-${ATLAS_SHA}/.git \
   && mv atlas-${ATLAS_SHA} atlas \
-  && rm ${ATLAS_SHA}.zip
+  && rm ${ATLAS_SHA}.zip \
+  && mv ../build/dsi_studio . \
+  && rm -rf /opt/dsi-studio/src /opt/dsi-studio/build

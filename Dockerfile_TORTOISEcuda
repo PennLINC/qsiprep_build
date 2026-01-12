@@ -2,24 +2,30 @@ ARG TAG_ANTS
 
 FROM pennlinc/qsiprep-ants:${TAG_ANTS} as base
 FROM base as builder
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+RUN wget -O /tmp/cuda-keyring.deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i /tmp/cuda-keyring.deb && \
+    rm /tmp/cuda-keyring.deb
 
 RUN apt update && apt full-upgrade -y && \
-  apt install --no-install-recommends -y software-properties-common && \
-  add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
-  apt-get update && \
-  apt install -y --no-install-recommends \
+  apt install --no-install-recommends -y \
+    software-properties-common \
     zlib1g-dev \
     wget \
     git \
-    g++-9 gcc-9 \
-    libeigen3-dev fftw3 libfftw3-dev
-
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
-    | apt-key add - \
-  && apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ bionic main' \
-  && apt-get update \
-  && apt-get -y install cmake=3.23.2-0kitware1ubuntu18.04.1 cmake-data=3.23.2-0kitware1ubuntu18.04.1
+    build-essential \
+    libeigen3-dev \
+    fftw3 \
+    libfftw3-dev \
+    gnupg \
+    ca-certificates \
+    apt-transport-https && \
+  wget -O /tmp/kitware-archive.key https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null && \
+  gpg --dearmor /tmp/kitware-archive.key && \
+  mv /tmp/kitware-archive.key.gpg /usr/share/keyrings/kitware-archive-keyring.gpg && \
+  echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main" > /etc/apt/sources.list.d/kitware.list && \
+  apt-get update && \
+  apt-get -y install cmake cmake-data && \
+  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 RUN \
@@ -27,8 +33,6 @@ RUN \
   && cd /src \
   && wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz \
   && tar -xvf boost_1_77_0.tar.gz \
-  && rm /usr/bin/g++ \
-  && ln -s /usr/bin/g++-9 /usr/bin/g++ \
   && cd boost_1_77_0 \
   && ./bootstrap.sh --with-libraries=iostreams,filesystem,system,regex --prefix=/usr/local/boost176 \
   && ./b2 install
@@ -42,8 +46,6 @@ RUN \
   && git checkout ${TORTOISE_SHA} \
   && sed -i '/BrukerBmatToTORTOISEBMTXT/d' CMakeLists.txt \
   && cmake . \
-      -DCMAKE_C_COMPILER=/usr/bin/gcc-9 \
-      -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 \
       -DUSECUDA=1 \
       -DQSIPREP=1 \
       -DITK_DIR=/tmp/ants/build/ITKv5-build \
