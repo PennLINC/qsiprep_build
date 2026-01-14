@@ -6,7 +6,7 @@ ARG TAG_3TISSUE
 ARG TAG_DSISTUDIO
 ARG TAG_DSISTUDIOCHEN
 ARG TAG_MICROMAMBA
-ARG TAG_AFNI
+ARG TAG_AFNI=AFNI_25.2.09
 ARG TAG_TORTOISE
 ARG TAG_TORTOISECUDA
 ARG TAG_SYNB0
@@ -17,27 +17,27 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG FSL_BUILD
 
 # COPY can't handle variables, so here we go
-FROM pennlinc/qsiprep-fsl:${TAG_FSL} as build_fsl
-FROM pennlinc/qsiprep-freesurfer:${TAG_FREESURFER} as build_freesurfer
-FROM pennlinc/qsiprep-ants:${TAG_ANTS} as build_ants
-FROM pennlinc/qsiprep-mrtrix3:${TAG_MRTRIX3} as build_mrtrix3
-FROM pennlinc/qsiprep-3tissue:${TAG_3TISSUE} as build_3tissue
-FROM pennlinc/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
-FROM pennlinc/qsiprep-dsistudio-chen:${TAG_DSISTUDIOCHEN} as build_dsistudio_chen
-FROM pennlinc/qsiprep-micromamba:${TAG_MICROMAMBA} as build_micromamba
-FROM pennlinc/qsiprep-afni:${TAG_AFNI} as build_afni
-FROM pennlinc/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
-FROM pennlinc/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
-FROM pennlinc/qsiprep-synb0:${TAG_SYNB0} as build_synb0
-FROM pennlinc/atlaspack:0.1.0 as atlaspack
-FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 as base
+FROM pennlinc/qsiprep-fsl:${TAG_FSL} AS build_fsl
+from afni/afni_make_build:${TAG_AFNI} AS build_afni
+FROM pennlinc/qsiprep-freesurfer:${TAG_FREESURFER} AS build_freesurfer
+FROM pennlinc/qsiprep-ants:${TAG_ANTS} AS build_ants
+FROM pennlinc/qsiprep-mrtrix3:${TAG_MRTRIX3} AS build_mrtrix3
+FROM pennlinc/qsiprep-3tissue:${TAG_3TISSUE} AS build_3tissue
+FROM pennlinc/qsiprep-dsistudio:${TAG_DSISTUDIO} AS build_dsistudio
+FROM pennlinc/qsiprep-dsistudio-chen:${TAG_DSISTUDIOCHEN} AS build_dsistudio_chen
+FROM pennlinc/qsiprep-micromamba:${TAG_MICROMAMBA} AS build_micromamba
+FROM pennlinc/qsiprep-drbuddi:${TAG_TORTOISE} AS build_tortoise
+FROM pennlinc/qsiprep-drbuddicuda:${TAG_TORTOISE} AS build_tortoisecuda
+FROM pennlinc/qsiprep-synb0:${TAG_SYNB0} AS build_synb0
+FROM pennlinc/atlaspack:0.1.0 AS atlaspack
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 AS base
 
 # Make a dummy fsl image containing no FSL
-FROM base as no_fsl
+FROM base AS no_fsl
 RUN mkdir -p /opt/conda/envs/fslqsiprep/bin \
     && touch /opt/conda/envs/fslqsiprep/bin/eddy_cuda10.2
 
-FROM ${FSL_BUILD} as this-fsl
+FROM ${FSL_BUILD} AS this-fsl
 
 FROM base
 ## FSL
@@ -100,15 +100,39 @@ COPY --from=build_synb0 /opt/synb0 /opt/synb0
 ENV SYNB0_ATLASES=/opt/synb0/atlases
 
 ## AFNI
-COPY --from=build_afni /opt/afni-latest /opt/afni-latest
-ENV PATH="$PATH:/opt/afni-latest" \
-    AFNI_INSTALLDIR=/opt/afni-latest \
+# Find libraries with `ldd $BINARIES | grep afni`
+COPY --link --from=build_afni \
+    /opt/afni/install/libf2c.so  \
+    /opt/afni/install/libmri.so  \
+    /opt/afni/install/libSUMA.so  \
+    /usr/local/lib/
+COPY --link --from=build_afni \
+    /opt/afni/install/3dAutobox \
+    /opt/afni/install/3dAutomask \
+    /opt/afni/install/3dFWHMx \
+    /opt/afni/install/3dQwarp \
+    /opt/afni/install/3dSeg \
+    /opt/afni/install/3dSkullStrip \
+    /opt/afni/install/3dTcat \
+    /opt/afni/install/3dTshift \
+    /opt/afni/install/3dTsplit4D \
+    /opt/afni/install/3dTstat \
+    /opt/afni/install/3dUnifize \
+    /opt/afni/install/3dWarp \
+    /opt/afni/install/3dZeropad \
+    /opt/afni/install/3dcalc \
+    /opt/afni/install/3drefit \
+    /opt/afni/install/3dresample \
+    /opt/afni/install/3dvolreg \
+    /usr/local/bin/
+
+ENV PATH="$PATH:/usr/local/bin" \
+    AFNI_INSTALLDIR=/usr/local/bin \
     AFNI_IMSAVE_WARNINGS=NO
 
 ## TORTOISE
 COPY --from=build_tortoise /src/TORTOISEV4/bin /src/TORTOISEV4/bin
 COPY --from=build_tortoise /src/TORTOISEV4/settings /src/TORTOISEV4/settings
-COPY --from=build_tortoise /usr/local/boost176 /usr/local/boost176
 COPY --from=build_tortoisecuda /src/TORTOISEV4/bin/*cuda /src/TORTOISEV4/bin/
 ENV PATH="$PATH:/src/TORTOISEV4/bin" \
     TORTOISE_DEPS="libfftw3-3"
@@ -125,6 +149,7 @@ ENV PATH="/opt/conda/envs/qsiprep/bin:$PATH"
 RUN apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
            bc \
+           binutils \
            bzip2 \
            ca-certificates \
            curl \
@@ -163,20 +188,6 @@ RUN apt-get update -qq \
            ${TORTOISE_DEPS} \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && curl -sSL --retry 5 -o /tmp/libxp6.deb https://upenn.box.com/shared/static/reyyundn0l3guvjzghrrv6t4w6md2tjd.deb \
-    && dpkg -i /tmp/libxp6.deb \
-    && rm /tmp/libxp6.deb \
-    && curl -sSL --retry 5 -o /tmp/libpng.deb http://snapshot.debian.org/archive/debian-security/20160113T213056Z/pool/updates/main/libp/libpng/libpng12-0_1.2.49-1%2Bdeb7u2_amd64.deb \
-    && dpkg -i /tmp/libpng.deb \
-    && rm /tmp/libpng.deb \
-    && apt-get install -f --no-install-recommends \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && gsl2_path="$(find / -name 'libgsl.so.[0-9]*' | sort | head -n1 || printf '')" \
-    && if [ -n "$gsl2_path" ]; then \
-         ln -sfv "$gsl2_path" "$(dirname "$gsl2_path")/libgsl.so.0"; \
-    fi \
-    && ldconfig \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN echo "Downloading Convert3D ..." \
