@@ -80,13 +80,6 @@ jobs:
       BUILD_FILE: "Dockerfile_MRtrix3"
     <<: *build
 
-  build_AFNI:
-    environment:
-      VERSION_TAG: "TAG_AFNI"
-      IMG_NAME: "qsiprep-afni"
-      BUILD_FILE: "Dockerfile_AFNI"
-    <<: *build
-
   build_DSIStudio:
     environment:
       VERSION_TAG: "TAG_DSISTUDIO"
@@ -233,11 +226,6 @@ workflows:
             tags:
               only: /.*/
 
-      - build_AFNI:
-          filters:
-            tags:
-              only: /.*/
-
       - build_Micromamba:
           filters:
             tags:
@@ -272,7 +260,6 @@ workflows:
             - build_DSIStudioChen
             - build_ANTs
             - build_Micromamba
-            - build_AFNI
             - build_TORTOISE
             - build_TORTOISECUDA
             - build_SYNB0
