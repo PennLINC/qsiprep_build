@@ -154,6 +154,7 @@ RUN apt-get update -qq \
            ca-certificates \
            curl \
            wget \
+           git \
            gnupg \
            gsl-bin \
            graphviz \
