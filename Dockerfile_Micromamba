@@ -1,4 +1,4 @@
-# Copied from: fMRIPrep Docker Container Image distribution
+# Copied and modified from: fMRIPrep Docker Container Image distribution
 #
 # MIT License
 #
@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM nvidia/cuda:11.2.2-devel-ubuntu18.04
+FROM nvidia/cuda:12.2.2-devel-ubuntu22.04
 ARG TAG_ANTS
 
 RUN apt-get update && \
@@ -35,7 +35,7 @@ RUN apt-get update && \
                     libglu1-mesa-dev \
                     bzip2 \
                     libgomp1 \
-                    wget 
+                    wget
 
 # Create a shared $HOME directory
 RUN useradd -m -s /bin/bash -G users qsiprep
@@ -61,12 +61,12 @@ RUN micromamba clean -y -a
 
 RUN \
   cd /tmp && \
-  wget https://github.com/freesurfer/surfa/archive/refs/tags/v0.6.0.tar.gz && \
-  tar xvfz v0.6.0.tar.gz && \
-  cd surfa-0.6.0 && \
+  wget https://github.com/freesurfer/surfa/archive/refs/tags/v0.6.1.tar.gz && \
+  tar xvfz v0.6.1.tar.gz && \
+  cd surfa-0.6.1 && \
   python setup.py install && \
   cd .. && \
-  rm -rf surfa-0.6.0 v0.6.0.tar.gz
+  rm -rf surfa-0.6.1 v0.6.1.tar.gz
 
 
 RUN mkdir -p ${HOME}/.dipy \

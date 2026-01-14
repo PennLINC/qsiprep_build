@@ -4,11 +4,13 @@ ARG TAG_ANTS
 ARG TAG_MRTRIX3
 ARG TAG_3TISSUE
 ARG TAG_DSISTUDIO
+ARG TAG_DSISTUDIOCHEN
 ARG TAG_MICROMAMBA
 ARG TAG_AFNI
 ARG TAG_TORTOISE
 ARG TAG_TORTOISECUDA
 ARG TAG_SYNB0
+ARG DEBIAN_FRONTEND=noninteractive
 
 # TO include FSL set --build-arg FSL_BUILD=build_fsl
 # To skip it set --build-arg FSL_BUILD=no_fsl
@@ -21,22 +23,23 @@ FROM pennlinc/qsiprep-ants:${TAG_ANTS} as build_ants
 FROM pennlinc/qsiprep-mrtrix3:${TAG_MRTRIX3} as build_mrtrix3
 FROM pennlinc/qsiprep-3tissue:${TAG_3TISSUE} as build_3tissue
 FROM pennlinc/qsiprep-dsistudio:${TAG_DSISTUDIO} as build_dsistudio
+FROM pennlinc/qsiprep-dsistudio-chen:${TAG_DSISTUDIOCHEN} as build_dsistudio_chen
 FROM pennlinc/qsiprep-micromamba:${TAG_MICROMAMBA} as build_micromamba
 FROM pennlinc/qsiprep-afni:${TAG_AFNI} as build_afni
 FROM pennlinc/qsiprep-drbuddi:${TAG_TORTOISE} as build_tortoise
 FROM pennlinc/qsiprep-drbuddicuda:${TAG_TORTOISE} as build_tortoisecuda
 FROM pennlinc/qsiprep-synb0:${TAG_SYNB0} as build_synb0
 FROM pennlinc/atlaspack:0.1.0 as atlaspack
-FROM nvidia/cuda:11.1.1-runtime-ubuntu18.04 as ubuntu
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 as base
 
 # Make a dummy fsl image containing no FSL
-FROM ubuntu as no_fsl
+FROM base as no_fsl
 RUN mkdir -p /opt/conda/envs/fslqsiprep/bin \
     && touch /opt/conda/envs/fslqsiprep/bin/eddy_cuda10.2
 
 FROM ${FSL_BUILD} as this-fsl
 
-FROM ubuntu
+FROM base
 ## FSL
 COPY --from=this-fsl /opt/conda/envs/fslqsiprep /opt/conda/envs/fslqsiprep
 ENV FSLDIR="/opt/conda/envs/fslqsiprep" \
@@ -55,15 +58,13 @@ COPY --from=build_ants /opt/ants /opt/ants
 ENV ANTSPATH="/opt/ants/bin" \
     LD_LIBRARY_PATH="/opt/ants/lib:$LD_LIBRARY_PATH" \
     PATH="$PATH:/opt/ants/bin" \
-    ANTS_DEPS="zlib1g-dev"
+    ANTS_DEPS="zlib1g"
 
 ## DSI Studio
-ENV QT_BASE_DIR="/opt/qt512"
-ENV QTDIR="$QT_BASE_DIR" \
-    LD_LIBRARY_PATH="$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" \
-    PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" \
-    PATH="$QT_BASE_DIR/bin:$PATH:/opt/dsi-studio" \
-    DSI_STUDIO_DEPS="qt512base qt512charts-no-lgpl"
+ENV DSI_STUDIO_DEPS="libqt5charts5 libqt5opengl5 libqt5svg5 libqt5gui5 libqt5widgets5 libqt5sql5 libqt5network5" \
+    QT_PLUGIN_PATH="/usr/lib/x86_64-linux-gnu/qt5/plugins" \
+    QML2_IMPORT_PATH="/usr/lib/x86_64-linux-gnu/qt5/qml" \
+    PATH="/opt/dsi-studio:/opt/dsi-studio/dsi_studio_64:$PATH"
 
 ## MRtrix3
 COPY --from=build_mrtrix3 /opt/mrtrix3-latest /opt/mrtrix3-latest
@@ -110,7 +111,7 @@ COPY --from=build_tortoise /src/TORTOISEV4/settings /src/TORTOISEV4/settings
 COPY --from=build_tortoise /usr/local/boost176 /usr/local/boost176
 COPY --from=build_tortoisecuda /src/TORTOISEV4/bin/*cuda /src/TORTOISEV4/bin/
 ENV PATH="$PATH:/src/TORTOISEV4/bin" \
-    TORTOISE_DEPS="fftw3"
+    TORTOISE_DEPS="libfftw3-3"
 
     # Create a shared $HOME directory
 RUN useradd -m -s /bin/bash -G users qsiprep
@@ -123,31 +124,43 @@ ENV PATH="/opt/conda/envs/qsiprep/bin:$PATH"
 
 RUN apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
-           apt-utils \
+           bc \
            bzip2 \
            ca-certificates \
            curl \
-           ed \
-           bc \
+           wget \
+           gnupg \
            gsl-bin \
+           graphviz \
+           libblas3 \
+           libboost-filesystem1.74.0 \
+           libboost-program-options1.74.0 \
+           libboost-serialization1.74.0 \
+           libboost-system1.74.0 \
+           libboost-thread1.74.0 \
+           libfftw3-3 \
            libglib2.0-0 \
-           libglu1-mesa-dev \
+           libgl1 \
+           libglu1-mesa \
            libglw1-mesa \
            libgomp1 \
            libjpeg62 \
+           liblapack3 \
            libpng16-16 \
            libquadmath0 \
+           libtiff5 \
            libxm4 \
            libxmu6 \
            libxt6 \
-           perl \
-           libtiff5 \
            netpbm \
-           software-properties-common \
+           perl \
            tcsh \
            xfonts-base \
            xvfb \
-           zlib1g-dev \
+           zlib1g \
+           ${MRTRIX3_DEPS} \
+           ${DSI_STUDIO_DEPS} \
+           ${TORTOISE_DEPS} \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && curl -sSL --retry 5 -o /tmp/libxp6.deb https://upenn.box.com/shared/static/reyyundn0l3guvjzghrrv6t4w6md2tjd.deb \
@@ -159,9 +172,9 @@ RUN apt-get update -qq \
     && apt-get install -f --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && gsl2_path="$(find / -name 'libgsl.so.19' || printf '')" \
+    && gsl2_path="$(find / -name 'libgsl.so.[0-9]*' | sort | head -n1 || printf '')" \
     && if [ -n "$gsl2_path" ]; then \
-         ln -sfv "$gsl2_path" "$(dirname $gsl2_path)/libgsl.so.0"; \
+         ln -sfv "$gsl2_path" "$(dirname "$gsl2_path")/libgsl.so.0"; \
     fi \
     && ldconfig \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -177,10 +190,8 @@ ENV C3DPATH="/opt/convert3d-nightly" \
     PATH="/opt/convert3d-nightly/bin:$PATH"
 
 # Prepare environment
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        zlib1g-dev graphviz libfftw3-3 && \
-    curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
       nodejs && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -193,19 +204,8 @@ RUN curl -o pandoc-2.2.2.1-1-amd64.deb -sSL "https://github.com/jgm/pandoc/relea
     dpkg -i pandoc-2.2.2.1-1-amd64.deb && \
     rm pandoc-2.2.2.1-1-amd64.deb
 
-# Install qt5.12.8
-RUN add-apt-repository ppa:beineri/opt-qt-5.12.8-bionic \
-    && apt-get update \
-    && apt install -y --no-install-recommends \
-    ${DSI_STUDIO_DEPS} ${MRTRIX3_DEPS} ${TORTOISE_DEPS} wget git binutils \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Install Qt runtime deps for DSI Studio and copy binaries
 COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
-
-# Install gcc-9
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends libstdc++6 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install ACPC-detect
 WORKDIR /opt/art
@@ -226,11 +226,9 @@ ENV \
     IS_DOCKER_8395080871=1 \
     ARTHOME="/opt/art" \
     DIPY_HOME=/home/qsiprep/.dipy \
-    QTDIR=$QT_BASE_DIR \
-    PATH=$QT_BASE_DIR/bin:$PATH \
-    LD_LIBRARY_PATH=$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH \
-    PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH \
-    LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/conda/envs/qsiprep/lib/python3.10/site-packages/nvidia/cudnn/lib:/opt/freesurfer/lib
+    QT_PLUGIN_PATH="/usr/lib/x86_64-linux-gnu/qt5/plugins" \
+    QML2_IMPORT_PATH="/usr/lib/x86_64-linux-gnu/qt5/qml" \
+    LD_LIBRARY_PATH="/opt/conda/envs/qsiprep/lib/python3.10/site-packages/nvidia/cudnn/lib:/opt/freesurfer/lib:${LD_LIBRARY_PATH}"
 
 WORKDIR /root/
 
@@ -241,8 +239,9 @@ RUN python fetch_templates.py && \
     find $HOME/.cache/templateflow -type f -exec chmod go=u {} +
 
 # Make it ok for singularity on CentOS
-RUN strip --remove-section=.note.ABI-tag /opt/qt512/lib/libQt5Core.so.5.12.8 \
-    && ldconfig
+RUN if [ -f /usr/lib/x86_64-linux-gnu/libQt5Core.so.5 ]; then \
+      strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so.5; \
+    fi && ldconfig
 
 # Make singularity mount directories
 RUN  mkdir -p /sngl/data \

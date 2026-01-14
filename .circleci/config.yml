@@ -94,6 +94,13 @@ jobs:
       BUILD_FILE: "Dockerfile_DSIStudio"
     <<: *build
 
+  build_DSIStudioChen:
+    environment:
+      VERSION_TAG: "TAG_DSISTUDIOCHEN"
+      IMG_NAME: "qsiprep-dsistudio-chen"
+      BUILD_FILE: "Dockerfile_DSIStudioChen"
+    <<: *build
+
   build_ANTs:
     environment:
       VERSION_TAG: "TAG_ANTS"
@@ -216,6 +223,11 @@ workflows:
             tags:
               only: /.*/
 
+      - build_DSIStudioChen:
+          filters:
+            tags:
+              only: /.*/
+
       - build_ANTs:
           filters:
             tags:
@@ -257,6 +269,7 @@ workflows:
             - build_3Tissue
             - build_MRtrix3
             - build_DSIStudio
+            - build_DSIStudioChen
             - build_ANTs
             - build_Micromamba
             - build_AFNI
