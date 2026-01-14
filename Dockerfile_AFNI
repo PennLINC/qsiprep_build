@@ -28,6 +28,7 @@ ARG TAG_ANTS
 RUN apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
            apt-utils \
+           ca-certificates \
            ed \
            gsl-bin \
            curl \

@@ -3,7 +3,8 @@ FROM ubuntu:22.04 AS base
 ARG TAG_ANTS
 
 FROM alpine AS builder
-RUN mkdir -p /opt/synb0 \
+RUN apk add --no-cache wget \
+  && mkdir -p /opt/synb0 \
   && cd /opt/synb0 \
   && wget https://raw.githubusercontent.com/MASILab/Synb0-DISCO/master/synb0-license-ccby4.0.txt
 

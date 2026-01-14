@@ -3,7 +3,7 @@ ARG TAG_ANTS
 FROM base AS builder
 
 # Cap build parallelism; override with --build-arg MAX_JOBS=N
-ARG MAX_JOBS=10
+ARG MAX_JOBS=2
 ENV CMAKE_BUILD_PARALLEL_LEVEL=${MAX_JOBS} \
     NINJAFLAGS=-j${MAX_JOBS} \
     MAKEFLAGS=-j${MAX_JOBS}
