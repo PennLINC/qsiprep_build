@@ -10,16 +10,16 @@ export BUILD_TAG
 # Versions of the components
 export TAG_FSL=26.1.0
 export TAG_FREESURFER=26.1.0
-export TAG_ANTS=26.1.0
+export TAG_ANTS=26.1.2
 export TAG_MRTRIX3=26.1.0
 export TAG_3TISSUE=26.1.0
-export TAG_DSISTUDIO=26.1.0
-export TAG_DSISTUDIOCHEN=26.1.0
+export TAG_DSISTUDIO=26.1.2
+export TAG_DSISTUDIOCHEN=26.1.2
 export TAG_MICROMAMBA=26.1.0
 export TAG_AFNI=26.1.1
 export TAG_TORTOISE=26.1.0
 export TAG_TORTOISECUDA=26.1.0
-export TAG_SYNB0=26.1.1
+export TAG_SYNB0=26.1.2
 
 echo "Settings:"
 echo "----------"
