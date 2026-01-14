@@ -1,5 +1,5 @@
 FROM leonyichencai/synb0-disco:v3.1 AS synb0
-FROM ubuntu:18.04 AS base
+FROM ubuntu:22.04 AS base
 ARG TAG_ANTS
 
 FROM alpine AS builder
@@ -7,7 +7,7 @@ RUN mkdir -p /opt/synb0 \
   && cd /opt/synb0 \
   && wget https://raw.githubusercontent.com/MASILab/Synb0-DISCO/master/synb0-license-ccby4.0.txt
 
-FROM base 
+FROM base
 # Get the SyNb0 models and python executables
 COPY --from=synb0 /extra/dual_channel_unet /opt/synb0/dual_channel_unet
 COPY --from=synb0 /extra/atlases /opt/synb0/atlases

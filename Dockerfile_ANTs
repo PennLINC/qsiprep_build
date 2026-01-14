@@ -1,6 +1,12 @@
-FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 as base
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 AS base
 ARG TAG_ANTS
-FROM base as builder
+FROM base AS builder
+
+# Cap build parallelism; override with --build-arg MAX_JOBS=N
+ARG MAX_JOBS=10
+ENV CMAKE_BUILD_PARALLEL_LEVEL=${MAX_JOBS} \
+    NINJAFLAGS=-j${MAX_JOBS} \
+    MAKEFLAGS=-j${MAX_JOBS}
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -19,21 +25,21 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ARG ANTS_SHA=caa60eb4ad53d561f9ddd72b71a6baf2acac0078
+COPY scripts/exclude_ants_executables.py /tmp/exclude_ants_executables.py
 RUN mkdir /tmp/ants \
     && cd /tmp \
     && git clone https://github.com/ANTsX/ANTs.git \
     && mv ANTs /tmp/ants/source \
     && cd /tmp/ants/source \
     && git checkout ${ANTS_SHA} \
-    && find /tmp/ants/source -name "*.cmake" -type f -exec sed -i 's/cmake_minimum_required(VERSION [0-9]\.[0-4])/cmake_minimum_required(VERSION 3.5)/g' {} \; \
-    && find /tmp/ants/source -name "CMakeLists.txt" -type f -exec sed -i 's/cmake_minimum_required(VERSION [0-9]\.[0-4])/cmake_minimum_required(VERSION 3.5)/g' {} \; \
+    && python3 /tmp/exclude_ants_executables.py /tmp/ants/source \
     && mkdir -p /tmp/ants/build \
     && cd /tmp/ants/build \
     && mkdir -p /opt/ants \
     && git config --global url."https://".insteadOf git:// \
     && cmake \
         -GNinja \
-        -DBUILD_TESTING=OFF \
+        -DBUILD_TESTING=ON \
         -DBUILD_SHARED_LIBS=ON \
         -DSuperBuild_ANTS_C_OPTIMIZATION_FLAGS="-mtune=x86-64 -march=x86-64" \
         -DSuperBuild_ANTS_CXX_OPTIMIZATION_FLAGS="-mtune=x86-64 -march=x86-64" \
@@ -41,43 +47,7 @@ RUN mkdir /tmp/ants \
         /tmp/ants/source \
     && cmake --build . --parallel 1 \
     && cd ANTS-build \
-    && cmake --install . \
-    && cd /opt/ants/bin \
-    && rm \
-        ANTSUseLandmarkImagesToGetAffineTransform \
-        ANTSUseLandmarkImagesToGetBSplineDisplacementField \
-        ClusterImageStatistics \
-        ConvertInputImagePixelTypeToFloat \
-        ConvertScalarImageToRGB \
-        ConvertToJpg \
-        CreateDTICohort \
-        DeNrrd \
-        ExtractSliceFromImage \
-        FitBSplineToPoints \
-        KellyKapowski \
-        KellySlater \
-        NonLocalSuperResolution \
-        SuperResolution \
-        SurfaceBasedSmoothing \
-        TimeSCCAN \
-        WarpImageMultiTransform \
-        WarpTensorImageMultiTransform \
-        WarpTimeSeriesImageMultiTransform \
-        antsASLProcessing.sh \
-        antsBOLDNetworkAnalysis.R \
-        antsCorticalThickness.sh \
-        antsIntermodalityIntrasubject.sh \
-        antsLandmarkBasedTransformInitializer \
-        antsLongitudinalCorticalThickness.sh \
-        antsMotionCorr \
-        antsMotionCorrDiffusionDirection \
-        antsMotionCorrStats \
-        antsNetworkAnalysis.R \
-        antsNeuroimagingBattery \
-        antsSliceRegularizedRegistration \
-        antsUtilitiesTesting \
-        sccan \
-        simpleSynRegistration
+    && cmake --install .
 
 FROM base
 COPY --from=builder /opt/ants /opt/ants

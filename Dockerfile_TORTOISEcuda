@@ -1,10 +1,11 @@
 ARG TAG_ANTS
 
-FROM pennlinc/qsiprep-ants:${TAG_ANTS} as base
+FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 as base
+FROM pennlinc/qsiprep-ants:${TAG_ANTS} as ants_source
 FROM base as builder
-RUN wget -O /tmp/cuda-keyring.deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
-    dpkg -i /tmp/cuda-keyring.deb && \
-    rm /tmp/cuda-keyring.deb
+
+# Copy ANTs build directory from the ANTs image
+COPY --from=ants_source /tmp/ants /tmp/ants
 
 RUN apt update && apt full-upgrade -y && \
   apt install --no-install-recommends -y \
@@ -18,30 +19,22 @@ RUN apt update && apt full-upgrade -y && \
     libfftw3-dev \
     gnupg \
     ca-certificates \
-    apt-transport-https && \
-  wget -O /tmp/kitware-archive.key https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null && \
-  gpg --dearmor /tmp/kitware-archive.key && \
-  mv /tmp/kitware-archive.key.gpg /usr/share/keyrings/kitware-archive-keyring.gpg && \
-  echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main" > /etc/apt/sources.list.d/kitware.list && \
-  apt-get update && \
-  apt-get -y install cmake cmake-data && \
-  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-
-RUN \
-  mkdir /src \
-  && cd /src \
-  && wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz \
-  && tar -xvf boost_1_77_0.tar.gz \
-  && cd boost_1_77_0 \
-  && ./bootstrap.sh --with-libraries=iostreams,filesystem,system,regex --prefix=/usr/local/boost176 \
-  && ./b2 install
+    apt-transport-https \
+    cmake \
+    cmake-data \
+    libboost-dev \
+    libboost-iostreams-dev \
+    libboost-filesystem-dev \
+    libboost-system-dev \
+    libboost-regex-dev && \
+  apt-get clean && rm -rf /var/lib/apt/lists/* /var/tmp/*
 
 
 ARG TORTOISE_SHA=5d0c688e85fd12a974d2ecbd8b567913a0b46c4f
 RUN \
-  cd /src \
-  && git clone https://github.com/eurotomania/TORTOISEV4.git \
+  mkdir -p /src \
+  && cd /src \
+  && git clone https://github.com/QMICodeBase/TORTOISEV4.git \
   && cd TORTOISEV4/TORTOISEV4 \
   && git checkout ${TORTOISE_SHA} \
   && sed -i '/BrukerBmatToTORTOISEBMTXT/d' CMakeLists.txt \

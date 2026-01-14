@@ -1,9 +1,10 @@
-FROM nvidia/cuda:11.1.1-devel-ubuntu18.04
+FROM nvidia/cuda:12.2.2-devel-ubuntu22.04
 ARG TAG_ANTS
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    curl git g++ python libeigen3-dev zlib1g-dev libqt5opengl5-dev libqt5svg5-dev libgl1-mesa-dev libfftw3-dev libtiff5-dev libpng-dev unzip
+    curl git g++ python3 python-is-python3 libeigen3-dev zlib1g-dev libqt5opengl5-dev libqt5svg5-dev libgl1-mesa-dev libfftw3-dev libtiff-dev libpng-dev unzip
+
 
 ARG MRTRIX_SHA=5f4c31bc93008520c61d59b94af0db3f17b4ab76
 ENV PATH="/opt/mrtrix3-latest/bin:$PATH"
