@@ -59,15 +59,6 @@ RUN micromamba create -vv -y -f /tmp/env.yml
 ENV PATH=/opt/conda/envs/qsiprep/bin:$PATH
 RUN micromamba clean -y -a
 
-RUN \
-  cd /tmp && \
-  wget https://github.com/freesurfer/surfa/archive/refs/tags/v0.6.1.tar.gz && \
-  tar xvfz v0.6.1.tar.gz && \
-  cd surfa-0.6.1 && \
-  python setup.py install && \
-  cd .. && \
-  rm -rf surfa-0.6.1 v0.6.1.tar.gz
-
 
 RUN mkdir -p ${HOME}/.dipy \
     && python -c "import amico; amico.core.setup()"
