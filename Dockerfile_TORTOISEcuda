@@ -30,14 +30,31 @@ RUN apt update && apt full-upgrade -y && \
   apt-get clean && rm -rf /var/lib/apt/lists/* /var/tmp/*
 
 
-ARG TORTOISE_SHA=5d0c688e85fd12a974d2ecbd8b567913a0b46c4f
+# Source is PennLINC's TORTOISE fork, not QMICodeBase/TORTOISEV4 upstream.
+# Its `upstream-port` branch is f559360 -- the newest upstream commit still
+# targeting the ITK 5.3 that pennlinc/qsiprep-ants ships -- plus the seven
+# post-cutoff upstream commits cherry-picked. It carries the qsiprep-side
+# additions that stock TORTOISE rejects: --epi_working_res,
+# --DRBUDDI_synth_shell_bval and the --ncores fixes.
+#
+# Keep TORTOISE_SHA in sync with Dockerfile_TORTOISE.
+ARG TORTOISE_REPO=https://github.com/PennLINC/qsiprep_TORTOISE.git
+ARG TORTOISE_SHA=2fe80a51afab2fedc60d4b42a34ba3410dc7b22d
+#
+# The clone must land on /src/TORTOISEV4. CMAKE_RUNTIME_OUTPUT_DIRECTORY is
+# ${CMAKE_BINARY_DIR}/../bin, so configuring inside <root>/TORTOISEV4 writes the
+# binaries to <root>/bin -- and qsiprep's Dockerfile.base copies
+# /src/TORTOISEV4/bin/*cuda out of this image.
+#
 RUN \
   mkdir -p /src \
-  && cd /src \
-  && git clone https://github.com/QMICodeBase/TORTOISEV4.git \
-  && cd TORTOISEV4/TORTOISEV4 \
+  && git clone ${TORTOISE_REPO} /src/TORTOISEV4 \
+  && cd /src/TORTOISEV4 \
   && git checkout ${TORTOISE_SHA} \
+  && cd TORTOISEV4 \
   && sed -i '/BrukerBmatToTORTOISEBMTXT/d' CMakeLists.txt \
+  && sed -i '/JoanahRegisterAlongAxes/d' CMakeLists.txt \
+  && sed -i -E '/^[[:space:]]*(add_executable|target_include_directories|target_link_libraries|target_compile_definitions)\(DRTAMAS/d' CMakeLists.txt \
   && cmake . \
       -DUSECUDA=1 \
       -DQSIPREP=1 \
