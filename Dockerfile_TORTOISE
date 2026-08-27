@@ -33,7 +33,7 @@ RUN apt update && apt full-upgrade -y && \
 # additions that stock TORTOISE rejects: --epi_working_res,
 # --DRBUDDI_synth_shell_bval and the --ncores fixes.
 ARG TORTOISE_REPO=https://github.com/PennLINC/qsiprep_TORTOISE.git
-ARG TORTOISE_SHA=ef7fb582681f35f1058dabb0aa3665c5b98d5a85
+ARG TORTOISE_SHA=d3301e5e9a96b16c0ce82760f4198708af81c07e
 #
 # The clone must land on /src/TORTOISEV4. CMAKE_RUNTIME_OUTPUT_DIRECTORY is
 # ${CMAKE_BINARY_DIR}/../bin, so configuring inside <root>/TORTOISEV4 writes the
