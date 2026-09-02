@@ -80,6 +80,13 @@ jobs:
       BUILD_FILE: "Dockerfile_MRtrix3"
     <<: *build
 
+  build_MRtrix3dev:
+    environment:
+      VERSION_TAG: "TAG_MRTRIX3DEV"
+      IMG_NAME: "qsiprep-mrtrix3dev"
+      BUILD_FILE: "Dockerfile_MRtrix3dev"
+    <<: *build
+
   build_DSIStudio:
     environment:
       VERSION_TAG: "TAG_DSISTUDIO"
@@ -211,6 +218,11 @@ workflows:
             tags:
               only: /.*/
 
+      - build_MRtrix3dev:
+          filters:
+            tags:
+              only: /.*/
+
       - build_DSIStudio:
           filters:
             tags:
@@ -256,6 +268,7 @@ workflows:
             - build_FreeSurfer
             - build_3Tissue
             - build_MRtrix3
+            - build_MRtrix3dev
             - build_DSIStudio
             - build_DSIStudioChen
             - build_ANTs
