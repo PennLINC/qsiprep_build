@@ -58,6 +58,16 @@ RUN cmake -B build -GNinja \
     cmake --build build && \
     cmake --install build --prefix /opt/mrtrix3
 
+# MPL-2.0 expects the licence to accompany distribution of the executables, and
+# `cmake --install` copies neither project's licence file. The image that this one
+# replaces shipped the whole MRtrix3 source tree, so its LICENCE.txt travelled for
+# free; here the two licences have to be placed into the install prefix explicitly
+# so they are carried by `COPY --from=build_mrtrix3 /opt/mrtrix3 /opt/mrtrix3`.
+# MRtrix3 spells its file the British way (LICENCE.txt); dwidenoise2 uses LICENSE.
+RUN mkdir -p /opt/mrtrix3/share/licenses && \
+    cp /src/mrtrix3/LICENCE.txt /opt/mrtrix3/share/licenses/mrtrix3-LICENCE.txt && \
+    cp /src/dwidenoise2/LICENSE /opt/mrtrix3/share/licenses/dwidenoise2-LICENSE
+
 ENV PATH="/opt/mrtrix3/bin:$PATH" \
     LD_LIBRARY_PATH="/opt/mrtrix3/lib:$LD_LIBRARY_PATH"
 
@@ -70,4 +80,6 @@ RUN mrdegibbs -help | grep -q dimensionality && \
     mrcalc -version && \
     mrtransform -version && \
     transformconvert -version && \
-    test -d /opt/mrtrix3/share/mrtrix3/dwidenoise2
+    test -d /opt/mrtrix3/share/mrtrix3/dwidenoise2 && \
+    test -s /opt/mrtrix3/share/licenses/mrtrix3-LICENCE.txt && \
+    test -s /opt/mrtrix3/share/licenses/dwidenoise2-LICENSE
