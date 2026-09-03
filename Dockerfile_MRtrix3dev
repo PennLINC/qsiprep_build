@@ -54,6 +54,8 @@ RUN cmake -B build -GNinja \
           -DMRTRIX_BUILD_GUI=OFF \
           -DMRTRIX_ENABLE_GPU=OFF \
           -DCMAKE_INSTALL_LIBDIR=lib \
+          -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib' \
+          -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
           --preset=release && \
     cmake --build build && \
     cmake --install build --prefix /opt/mrtrix3
@@ -68,18 +70,19 @@ RUN mkdir -p /opt/mrtrix3/share/licenses && \
     cp /src/mrtrix3/LICENCE.txt /opt/mrtrix3/share/licenses/mrtrix3-LICENCE.txt && \
     cp /src/dwidenoise2/LICENSE /opt/mrtrix3/share/licenses/dwidenoise2-LICENSE
 
-ENV PATH="/opt/mrtrix3/bin:$PATH" \
-    LD_LIBRARY_PATH="/opt/mrtrix3/lib:$LD_LIBRARY_PATH"
+ENV PATH="/opt/mrtrix3/bin:$PATH"
 
-# Fail the build here rather than in a user's pipeline. The dwibiascorrect check is the
-# important one: it is the only check that exercises the Python wrapper's ../lib import.
-RUN mrdegibbs -help | grep -q dimensionality && \
-    dwidenoise -version && \
-    dwidenoise2 -version && \
-    dwibiascorrect ants -help > /dev/null && \
-    mrcalc -version && \
-    mrtransform -version && \
-    transformconvert -version && \
+# Run with LD_LIBRARY_PATH cleared: these binaries must find their own libraries
+# through RPATH, because the QSIPrep image carries two MRtrix3 installations and a
+# global library path would let one shadow the other.
+RUN env -u LD_LIBRARY_PATH sh -c '\
+        mrdegibbs -help | grep -q dimensionality && \
+        dwidenoise -version && \
+        dwidenoise2 -version && \
+        dwibiascorrect ants -help > /dev/null && \
+        mrcalc -version && \
+        mrtransform -version && \
+        transformconvert -version' && \
     test -d /opt/mrtrix3/share/mrtrix3/dwidenoise2 && \
     test -s /opt/mrtrix3/share/licenses/mrtrix3-LICENCE.txt && \
     test -s /opt/mrtrix3/share/licenses/dwidenoise2-LICENSE
