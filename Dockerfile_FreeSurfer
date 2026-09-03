@@ -1,65 +1,127 @@
-FROM freesurfer/freesurfer:7.4.1 AS freesurfer
+FROM freesurfer/freesurfer:8.2.0 AS freesurfer
+FROM condaforge/miniforge3:25.3.1-0 AS freesurfer-python
+
+# SynthSeg is a standalone script and only needs this small TensorFlow stack.
+RUN mamba create --yes --prefix /opt/freesurfer-synthseg \
+      --channel conda-forge \
+      python=3.11 \
+      tensorflow=2.13.1 \
+      surfa=0.6.3 \
+      nibabel \
+      scipy \
+      numpy=1.26 && \
+    mamba clean --all --yes && \
+    /opt/freesurfer-synthseg/bin/python -c \
+      "import nibabel, numpy, scipy, surfa, tensorflow"
+
+# SynthStrip and SynB0 share one CUDA-capable Torch stack. Keep this separate
+# from TensorFlow so their CUDA libraries cannot overwrite one another.
+RUN mamba create --yes --prefix /opt/freesurfer-torch \
+      --channel pytorch \
+      --channel nvidia \
+      --channel conda-forge \
+      python=3.11 \
+      pytorch=2.1.2 \
+      pytorch-cuda=12.1 \
+      surfa=0.6.3 \
+      nibabel \
+      scipy \
+      numpy=1.26 && \
+    mamba clean --all --yes && \
+    /opt/freesurfer-torch/bin/python -c \
+      "import nibabel, numpy, scipy, surfa, torch; assert torch.version.cuda; assert torch.from_numpy(numpy.zeros(1)).shape == (1,)"
+
 FROM ubuntu:22.04
 ARG TAG_ANTS
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/bin/mri_binarize  \
+  /usr/local/freesurfer/8.2.0-1/bin/mri_binarize  \
   /opt/freesurfer/bin/mri_binarize
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/bin/mri_convert  \
+  /usr/local/freesurfer/8.2.0-1/bin/mri_convert  \
   /opt/freesurfer/bin/mri_convert
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/bin/mri_nu_correct.mni  \
+  /usr/local/freesurfer/8.2.0-1/bin/mri_nu_correct.mni  \
   /opt/freesurfer/bin/mri_nu_correct.mni
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/bin/mri_rigid_register \
+  /usr/local/freesurfer/8.2.0-1/bin/mri_rigid_register \
   /opt/freesurfer/bin/mri_rigid_register
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/bin/mri_robust_register  \
+  /usr/local/freesurfer/8.2.0-1/bin/mri_robust_register  \
   /opt/freesurfer/bin/mri_robust_register
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/bin/mris_calc  \
+  /usr/local/freesurfer/8.2.0-1/bin/mris_calc  \
   /opt/freesurfer/bin/mris_calc
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/bin/mri_segstats  \
+  /usr/local/freesurfer/8.2.0-1/bin/mri_segstats  \
   /opt/freesurfer/bin/mri_segstats
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/bin/mri_robust_template \
+  /usr/local/freesurfer/8.2.0-1/bin/mri_robust_template \
   /opt/freesurfer/bin/mri_robust_template
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/bin/lta_convert  \
+  /usr/local/freesurfer/8.2.0-1/bin/lta_convert  \
   /opt/freesurfer/bin/lta_convert
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/bin/lta_diff  \
+  /usr/local/freesurfer/8.2.0-1/bin/lta_diff  \
   /opt/freesurfer/bin/lta_diff
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/python/scripts/mri_synthseg  \
+  /usr/local/freesurfer/8.2.0-1/python/scripts/mri_synthseg  \
   /opt/freesurfer/bin/mri_synthseg
 
+# QSIPrep runs default SynthSeg 2.0 with posterior and QC outputs. Include the
+# parcellation model as a low-cost safeguard for direct interface use, but omit
+# unrelated SynthMorph, SynthSR, photo, robust, and v1 models.
 COPY --from=freesurfer \
-  /usr/local/freesurfer/models  \
-  /opt/freesurfer/models
+  /usr/local/freesurfer/8.2.0-1/models/synthseg_2.0.h5  \
+  /usr/local/freesurfer/8.2.0-1/models/synthseg_parc_2.0.h5  \
+  /usr/local/freesurfer/8.2.0-1/models/synthseg_qc_2.0.h5  \
+  /usr/local/freesurfer/8.2.0-1/models/synthseg_denoiser_labels_2.0.npy  \
+  /usr/local/freesurfer/8.2.0-1/models/synthseg_parcellation_labels.npy  \
+  /usr/local/freesurfer/8.2.0-1/models/synthseg_parcellation_names.npy  \
+  /usr/local/freesurfer/8.2.0-1/models/synthseg_qc_labels_2.0.npy  \
+  /usr/local/freesurfer/8.2.0-1/models/synthseg_qc_names_2.0.npy  \
+  /usr/local/freesurfer/8.2.0-1/models/synthseg_segmentation_labels_2.0.npy  \
+  /usr/local/freesurfer/8.2.0-1/models/synthseg_segmentation_names_2.0.npy  \
+  /usr/local/freesurfer/8.2.0-1/models/synthseg_topological_classes_2.0.npy  \
+  /opt/freesurfer/models/
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/python/scripts/mri_synthstrip  \
+  /usr/local/freesurfer/8.2.0-1/models/synthstrip.1.pt  \
+  /usr/local/freesurfer/8.2.0-1/models/synthstrip.nocsf.1.pt  \
+  /opt/freesurfer/models/
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/8.2.0-1/python/scripts/mri_synthstrip  \
   /opt/freesurfer/bin/mri_synthstrip
 
+COPY --from=freesurfer-python \
+  /opt/freesurfer-synthseg \
+  /opt/freesurfer-synthseg
+
+COPY --from=freesurfer-python \
+  /opt/freesurfer-torch \
+  /opt/freesurfer-torch
+
 COPY --from=freesurfer \
-  /usr/local/freesurfer/bin/mri_normalize  \
+  /usr/local/freesurfer/8.2.0-1/FreeSurferColorLUT.txt \
+  /opt/freesurfer/FreeSurferColorLUT.txt
+
+COPY --from=freesurfer \
+  /usr/local/freesurfer/8.2.0-1/bin/mri_normalize  \
   /opt/freesurfer/bin/mri_normalize
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/mni  \
+  /usr/local/freesurfer/8.2.0-1/mni  \
   /opt/freesurfer/mni
 
 COPY --from=freesurfer \
@@ -67,5 +129,10 @@ COPY --from=freesurfer \
   /opt/freesurfer/lib/
 
 COPY --from=freesurfer \
-  /usr/local/freesurfer/sources.csh \
+  /usr/local/freesurfer/8.2.0-1/sources.csh \
   /opt/freesurfer/sources.csh
+
+ENV FREESURFER_HOME=/opt/freesurfer
+RUN ln -s /opt/freesurfer-synthseg/bin/python /opt/freesurfer/bin/fspython && \
+    /opt/freesurfer/bin/fspython -c "import nibabel, scipy, surfa, tensorflow" && \
+    /opt/freesurfer-torch/bin/python -c "import nibabel, scipy, surfa, torch; assert torch.version.cuda"

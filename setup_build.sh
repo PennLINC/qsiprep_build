@@ -9,7 +9,7 @@ export BUILD_TAG
 
 # Versions of the components
 export TAG_FSL=26.1.0
-export TAG_FREESURFER=26.1.0
+export TAG_FREESURFER=26.9.2
 export TAG_ANTS=26.1.2
 export TAG_MRTRIX3=26.1.0
 export TAG_MRTRIX3DEV=26.9.1
