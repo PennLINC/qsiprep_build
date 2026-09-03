@@ -64,7 +64,7 @@ RUN cmake -B build -GNinja \
 # `cmake --install` copies neither project's licence file. The image that this one
 # replaces shipped the whole MRtrix3 source tree, so its LICENCE.txt travelled for
 # free; here the two licences have to be placed into the install prefix explicitly
-# so they are carried by `COPY --from=build_mrtrix3 /opt/mrtrix3 /opt/mrtrix3`.
+# so they are carried by `COPY --from=build_mrtrix3dev /opt/mrtrix3 /opt/mrtrix3-dev`.
 # MRtrix3 spells its file the British way (LICENCE.txt); dwidenoise2 uses LICENSE.
 RUN mkdir -p /opt/mrtrix3/share/licenses && \
     cp /src/mrtrix3/LICENCE.txt /opt/mrtrix3/share/licenses/mrtrix3-LICENCE.txt && \
