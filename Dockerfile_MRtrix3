@@ -1,5 +1,4 @@
 FROM nvidia/cuda:12.2.2-devel-ubuntu22.04
-ARG TAG_ANTS
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -16,5 +15,4 @@ RUN cd /opt \
     && ./configure -nogui \
     && echo "Compiling MRtrix3 ..." \
     && ./build
-
 

@@ -32,7 +32,6 @@ RUN mamba create --yes --prefix /opt/freesurfer-torch \
       "import nibabel, numpy, scipy, surfa, torch; assert torch.version.cuda; assert torch.from_numpy(numpy.zeros(1)).shape == (1,)"
 
 FROM ubuntu:22.04
-ARG TAG_ANTS
 
 COPY --from=freesurfer \
   /usr/local/freesurfer/8.2.0-1/bin/mri_binarize  \

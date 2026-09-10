@@ -1,14 +1,17 @@
 .. include:: links.rst
 
-QSIPrep: Preprocessing and analysis of q-space images
-=====================================================
+QSIPrep component image builds
+==============================
 
 .. image:: https://circleci.com/gh/PennLINC/qsiprep_build/tree/master.svg?style=svg
   :target: https://circleci.com/gh/PennLINC/qsiprep_build/tree/master
 
-.. image:: https://img.shields.io/badge/docker-pennlinc/qsiprep_build-brightgreen.svg?logo=docker&style=flat
-  :target: https://hub.docker.com/r/pennlinc/qsiprep_build/tags/
-  :alt: Docker
+This repository builds external component images consumed by QSIPrep and
+QSIRecon base images. QSIPrep's application environment, including FSL and
+ANTs, is created by Pixi in the QSIPrep repository and is not assembled here.
+
+The legacy aggregate ``pennlinc/qsiprep_build`` image is retired. Releases from
+this repository publish only the individual component images.
 
 
 Full documentation at https://qsiprep.readthedocs.io

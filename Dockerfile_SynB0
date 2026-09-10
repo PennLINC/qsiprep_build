@@ -1,6 +1,5 @@
 FROM leonyichencai/synb0-disco:v3.1 AS synb0
 FROM ubuntu:22.04 AS base
-ARG TAG_ANTS
 
 FROM alpine AS builder
 
@@ -17,4 +16,3 @@ COPY --from=synb0 /extra/synb0.cnf /opt/synb0/synb0.cnf
 COPY --from=builder /opt/synb0/synb0-license-ccby4.0.txt /opt/synb0/synb0-license-ccby4.0.txt
 
 RUN chmod +x /opt/synb0/inference.py
-

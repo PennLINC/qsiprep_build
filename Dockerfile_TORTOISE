@@ -1,7 +1,12 @@
-ARG TAG_ANTS
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 AS builder
 
-FROM pennlinc/qsiprep-ants:${TAG_ANTS} as base
-FROM base as builder
+# TORTOISE supports ITK 5.3. Keep this pin independent of ANTs: TORTOISE only
+# links to ITK, and its serialized transforms are consumed by whichever ANTs
+# installation the downstream application provides.
+ARG ITK_REPO=https://github.com/InsightSoftwareConsortium/ITK.git
+ARG ITK_SHA=1fc47c7bec4ee133318c1892b7b745763a17d411
+ARG MAX_JOBS=2
+ENV CMAKE_BUILD_PARALLEL_LEVEL=${MAX_JOBS}
 
 RUN apt update && apt full-upgrade -y && \
   apt install --no-install-recommends -y \
@@ -18,6 +23,8 @@ RUN apt update && apt full-upgrade -y && \
     apt-transport-https \
     cmake \
     cmake-data \
+    ninja-build \
+    patchelf \
     libboost-dev \
     libboost-iostreams-dev \
     libboost-filesystem-dev \
@@ -25,10 +32,29 @@ RUN apt update && apt full-upgrade -y && \
     libboost-regex-dev && \
   apt-get clean && rm -rf /var/lib/apt/lists/* /var/tmp/*
 
+# Build only ITK, rather than using the ITK build tree embedded in the custom
+# ANTs image. The installed tree is retained so the CUDA image can compile
+# against the exact same headers and libraries.
+RUN \
+  git clone ${ITK_REPO} /tmp/itk-source \
+  && cd /tmp/itk-source \
+  && git checkout ${ITK_SHA} \
+  && cmake \
+      -S /tmp/itk-source \
+      -B /tmp/itk-build \
+      -GNinja \
+      -DBUILD_SHARED_LIBS=ON \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/tortoise-itk \
+  && cmake --build /tmp/itk-build \
+  && cmake --install /tmp/itk-build \
+  && rm -rf /tmp/itk-source /tmp/itk-build
+
 
 # Source is PennLINC's TORTOISE fork, not QMICodeBase/TORTOISEV4 upstream.
 # Its `upstream-port` branch is f559360 -- the newest upstream commit still
-# targeting the ITK 5.3 that pennlinc/qsiprep-ants ships -- plus the seven
+# targeting ITK 5.3 -- plus the seven
 # post-cutoff upstream commits cherry-picked. It carries the qsiprep-side
 # additions that stock TORTOISE rejects: --epi_working_res,
 # --DRBUDDI_synth_shell_bval and the --ncores fixes.
@@ -37,8 +63,8 @@ ARG TORTOISE_SHA=d3301e5e9a96b16c0ce82760f4198708af81c07e
 #
 # The clone must land on /src/TORTOISEV4. CMAKE_RUNTIME_OUTPUT_DIRECTORY is
 # ${CMAKE_BINARY_DIR}/../bin, so configuring inside <root>/TORTOISEV4 writes the
-# binaries to <root>/bin -- and qsiprep's Dockerfile.base copies
-# /src/TORTOISEV4/bin and /src/TORTOISEV4/settings out of this image.
+# binaries to <root>/bin. The private ITK runtime is bundled below that directory
+# so consumers that copy /src/TORTOISEV4/bin automatically receive it too.
 #
 RUN \
   mkdir -p /src \
@@ -52,9 +78,25 @@ RUN \
   && cmake . \
       -DUSECUDA=0 \
       -DQSIPREP=1 \
-      -DITK_DIR=/tmp/ants/build/ITKv5-build \
+      -DITK_DIR=/opt/tortoise-itk/lib/cmake/ITK-5.3 \
       -DISDEBUG=0 \
       && \
-    make
+    cmake --build . \
+  && mkdir -p \
+      /src/TORTOISEV4/bin/lib/itk \
+      /src/TORTOISEV4/bin/share/licenses/ITK \
+  && cp -a /opt/tortoise-itk/lib/*.so* /src/TORTOISEV4/bin/lib/itk/ \
+  && cp \
+      /opt/tortoise-itk/share/doc/ITK-5.3/LICENSE \
+      /opt/tortoise-itk/share/doc/ITK-5.3/NOTICE \
+      /src/TORTOISEV4/bin/share/licenses/ITK/ \
+  && find /src/TORTOISEV4/bin/lib/itk -type f -name '*.so*' -exec \
+      patchelf --force-rpath --set-rpath '$ORIGIN' {} \; \
+  && find /src/TORTOISEV4/bin -maxdepth 1 -type f -executable -exec \
+      patchelf --force-rpath --set-rpath '$ORIGIN/lib/itk' {} \; \
+  && ldd /src/TORTOISEV4/bin/TORTOISEProcess \
+      | grep -q '/src/TORTOISEV4/bin/lib/itk/libITK' \
+  && ! ldd /src/TORTOISEV4/bin/TORTOISEProcess | grep -q 'not found' \
+  && ! ldd /src/TORTOISEV4/bin/TORTOISEProcess | grep -q '/opt/ants'
 
 CMD ["/bin/bash"]

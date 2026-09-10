@@ -1,11 +1,12 @@
-ARG TAG_ANTS
+ARG TAG_TORTOISE=26.9.3
 
-FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 as base
-FROM pennlinc/qsiprep-ants:${TAG_ANTS} as ants_source
-FROM base as builder
+FROM pennlinc/qsiprep-drbuddi:${TAG_TORTOISE} AS tortoise_cpu
+FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 AS builder
+ARG MAX_JOBS=2
+ENV CMAKE_BUILD_PARALLEL_LEVEL=${MAX_JOBS}
 
-# Copy ANTs build directory from the ANTs image
-COPY --from=ants_source /tmp/ants /tmp/ants
+# Compile against precisely the ITK installation used by the CPU build.
+COPY --from=tortoise_cpu /opt/tortoise-itk /opt/tortoise-itk
 
 RUN apt update && apt full-upgrade -y && \
   apt install --no-install-recommends -y \
@@ -22,6 +23,7 @@ RUN apt update && apt full-upgrade -y && \
     apt-transport-https \
     cmake \
     cmake-data \
+    patchelf \
     libboost-dev \
     libboost-iostreams-dev \
     libboost-filesystem-dev \
@@ -32,7 +34,7 @@ RUN apt update && apt full-upgrade -y && \
 
 # Source is PennLINC's TORTOISE fork, not QMICodeBase/TORTOISEV4 upstream.
 # Its `upstream-port` branch is f559360 -- the newest upstream commit still
-# targeting the ITK 5.3 that pennlinc/qsiprep-ants ships -- plus the seven
+# targeting ITK 5.3 -- plus the seven
 # post-cutoff upstream commits cherry-picked. It carries the qsiprep-side
 # additions that stock TORTOISE rejects: --epi_working_res,
 # --DRBUDDI_synth_shell_bval and the --ncores fixes.
@@ -58,9 +60,18 @@ RUN \
   && cmake . \
       -DUSECUDA=1 \
       -DQSIPREP=1 \
-      -DITK_DIR=/tmp/ants/build/ITKv5-build \
+      -DITK_DIR=/opt/tortoise-itk/lib/cmake/ITK-5.3 \
       -DISDEBUG=0 \
       && \
-    make
+    cmake --build . --target TORTOISEProcess_cuda DRBUDDI_cuda \
+  && find /src/TORTOISEV4/bin -maxdepth 1 -type f -name '*cuda' -executable -exec \
+      patchelf --force-rpath --set-rpath '$ORIGIN/lib/itk' {} \;
+
+FROM tortoise_cpu
+COPY --from=builder /src/TORTOISEV4/bin/*cuda /src/TORTOISEV4/bin/
+RUN ldd /src/TORTOISEV4/bin/TORTOISEProcess_cuda \
+      | grep -q '/src/TORTOISEV4/bin/lib/itk/libITK' \
+    && ! ldd /src/TORTOISEV4/bin/TORTOISEProcess_cuda | grep -q 'not found' \
+    && ! ldd /src/TORTOISEV4/bin/TORTOISEProcess_cuda | grep -q '/opt/ants'
 
 CMD ["/bin/bash"]
