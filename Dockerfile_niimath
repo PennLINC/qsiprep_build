@@ -1,0 +1,43 @@
+# niimath (Chris Rorden, rordenlab/niimath) — a BSD-2-Clause reimplementation of
+# FSL's fslmaths, plus optional fieldmap modules that let qsiprep drop FSL from
+# the GRE/phase-difference SDC path:
+#   -romeo     ROMEO phase unwrapping (replaces PRELUDE)
+#   -fmapprep  build a rad/s B0 fieldmap from a wrapped phase difference
+#              (emulates `fsl_prepare_fieldmap SIEMENS`)
+#   -fugue     EPI susceptibility unwarping (emulates FSL fugue)
+# These modules are ON by default in a source build; the PyPI wheel omits them,
+# which is why we build from source here rather than `pip install niimath`.
+FROM ubuntu:jammy-20250730 AS builder
+
+ARG MAX_JOBS=2
+ENV MAKEFLAGS=-j${MAX_JOBS}
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        git \
+        zlib1g-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Pin the exact commit built and validated against FSL on TRXScan phantoms.
+ARG NIIMATH_REPO=https://github.com/rordenlab/niimath.git
+ARG NIIMATH_SHA=89d6a725bc6ae926bc0aad7cc2d0608a26026b9f
+
+RUN git clone ${NIIMATH_REPO} /tmp/niimath && \
+    cd /tmp/niimath && \
+    git checkout ${NIIMATH_SHA} && \
+    make -C src && \
+    mkdir -p /opt/niimath/bin /opt/niimath/share/licenses/niimath && \
+    cp src/niimath /opt/niimath/bin/niimath && \
+    cp LICENSE /opt/niimath/share/licenses/niimath/ && \
+    # Sanity-check that the fieldmap modules are actually compiled in.
+    /opt/niimath/bin/niimath 2>&1 | grep -q -- '-fmapprep' && \
+    /opt/niimath/bin/niimath 2>&1 | grep -q -- '-romeo' && \
+    /opt/niimath/bin/niimath 2>&1 | grep -q -- '-fugue' && \
+    rm -rf /tmp/niimath
+
+# Minimal stage carrying just the staged tree, mirroring the other tool images
+# so Dockerfile.base can `COPY --from=build_niimath /opt/niimath /opt/niimath`.
+FROM scratch AS niimath
+COPY --from=builder /opt/niimath /opt/niimath
