@@ -115,6 +115,13 @@ jobs:
       BUILD_FILE: "Dockerfile_SynB0"
     <<: *build
 
+  build_niimath:
+    environment:
+      VERSION_TAG: "TAG_NIIMATH"
+      IMG_NAME: "qsiprep-niimath"
+      BUILD_FILE: "Dockerfile_niimath"
+    <<: *build
+
 workflows:
   version: 2
   build_components:
@@ -150,6 +157,11 @@ workflows:
               only: /.*/
 
       - build_SYNB0:
+          filters:
+            tags:
+              only: /.*/
+
+      - build_niimath:
           filters:
             tags:
               only: /.*/
