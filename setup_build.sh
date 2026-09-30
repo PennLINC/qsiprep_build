@@ -3,7 +3,7 @@
 # Versions of the component images
 export TAG_FREESURFER=26.9.2
 export TAG_MRTRIX3=26.1.0
-export TAG_MRTRIX3DEV=26.9.6
+export TAG_MRTRIX3DEV=26.9.8
 export TAG_3TISSUE=26.1.0
 export TAG_DSISTUDIO=26.1.2
 export TAG_DSISTUDIOCHEN=26.7.1
