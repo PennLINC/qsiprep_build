@@ -9,7 +9,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # MRtrix3 "dev" as at 2026-06-22, the commit dwidenoise2 is developed against.
 ARG MRTRIX3_SHA=b98b54e9ae8168eeb9af23322a07011d4754456d
-ARG DWIDENOISE2_COMMIT=7a896e65e940592ca2915ceee3e2484fce6c9bf3
+ARG DWIDENOISE2_COMMIT=cd08ec1a0f5eb1dbc9962f80c20c2bb3428c4f93
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
