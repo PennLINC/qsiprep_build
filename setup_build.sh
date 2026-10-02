@@ -11,7 +11,7 @@ export TAG_AFNI=AFNI_25.2.09
 export TAG_TORTOISE=26.9.10
 export TAG_TORTOISECUDA=26.9.10
 export TAG_SYNB0=26.1.2
-export TAG_NIIMATH=26.10.1
+export TAG_NIIMATH=26.10.2
 
 echo "Settings:"
 echo "----------"
