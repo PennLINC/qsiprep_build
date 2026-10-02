@@ -5,6 +5,8 @@
 #   -fmapprep  build a rad/s B0 fieldmap from a wrapped phase difference
 #              (emulates `fsl_prepare_fieldmap SIEMENS`)
 #   -fugue     EPI susceptibility unwarping (emulates FSL fugue)
+#   -skullstrip AFNI-style surface brain extraction (no model, no template);
+#              replaces FSL BET everywhere qsiprep used it.
 # These modules are ON by default in a source build; the PyPI wheel omits them,
 # which is why we build from source here rather than `pip install niimath`.
 FROM ubuntu:jammy-20250730 AS builder
@@ -20,14 +22,16 @@ RUN apt-get update && \
         zlib1g-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Pin the exact commit built and validated against FSL on TRXScan phantoms.
+# Pin the exact commit. 89d6a72 was validated against FSL on TRXScan phantoms;
+# 95645c2 (main, 2026-09-29) adds -skullstrip, validated against SynthStrip on
+# the same phantoms (Dice 0.958 T2w / 0.947 T1w).
 ARG NIIMATH_REPO=https://github.com/rordenlab/niimath.git
-ARG NIIMATH_SHA=89d6a725bc6ae926bc0aad7cc2d0608a26026b9f
+ARG NIIMATH_SHA=95645c2447ae4c5853d23c3e449a5b32e8aafe23
 
 RUN git clone ${NIIMATH_REPO} /tmp/niimath && \
     cd /tmp/niimath && \
     git checkout ${NIIMATH_SHA} && \
-    make -C src && \
+    SKULLSTRIP=1 make -C src && \
     mkdir -p /opt/niimath/bin /opt/niimath/share/licenses/niimath && \
     cp src/niimath /opt/niimath/bin/niimath && \
     cp LICENSE /opt/niimath/share/licenses/niimath/ && \
@@ -35,6 +39,7 @@ RUN git clone ${NIIMATH_REPO} /tmp/niimath && \
     /opt/niimath/bin/niimath 2>&1 | grep -q -- '-fmapprep' && \
     /opt/niimath/bin/niimath 2>&1 | grep -q -- '-romeo' && \
     /opt/niimath/bin/niimath 2>&1 | grep -q -- '-fugue' && \
+    /opt/niimath/bin/niimath 2>&1 | grep -- '-skullstrip' | grep -q -v 'NOT in this build' && \
     rm -rf /tmp/niimath
 
 # Minimal stage carrying just the staged tree, mirroring the other tool images

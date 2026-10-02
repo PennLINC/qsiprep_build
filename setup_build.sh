@@ -3,15 +3,15 @@
 # Versions of the component images
 export TAG_FREESURFER=26.9.2
 export TAG_MRTRIX3=26.1.0
-export TAG_MRTRIX3DEV=26.9.1
+export TAG_MRTRIX3DEV=26.9.9
 export TAG_3TISSUE=26.1.0
 export TAG_DSISTUDIO=26.1.2
 export TAG_DSISTUDIOCHEN=26.7.1
 export TAG_AFNI=AFNI_25.2.09
-export TAG_TORTOISE=26.9.5
-export TAG_TORTOISECUDA=26.9.5
+export TAG_TORTOISE=26.9.10
+export TAG_TORTOISECUDA=26.9.10
 export TAG_SYNB0=26.1.2
-export TAG_NIIMATH=26.9.4
+export TAG_NIIMATH=26.10.1
 
 echo "Settings:"
 echo "----------"
