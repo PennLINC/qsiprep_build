@@ -59,7 +59,7 @@ RUN \
 # additions that stock TORTOISE rejects: --epi_working_res,
 # --DRBUDDI_synth_shell_bval and the --ncores fixes.
 ARG TORTOISE_REPO=https://github.com/PennLINC/qsiprep_TORTOISE.git
-ARG TORTOISE_SHA=d0a32dcc2c3d401ce7077796b09de68fd00a688f
+ARG TORTOISE_SHA=dcae0f0b1a6c7b333eb5836d04daa8236a961f10
 #
 # The clone must land on /src/TORTOISEV4. CMAKE_RUNTIME_OUTPUT_DIRECTORY is
 # ${CMAKE_BINARY_DIR}/../bin, so configuring inside <root>/TORTOISEV4 writes the
