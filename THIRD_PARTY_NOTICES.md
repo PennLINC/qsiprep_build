@@ -7,12 +7,14 @@ upstream license files or official license pages when available.
 ## Summary of license coverage
 
 Non-commercial or restricted use:
+- dwidenoise (non-commercial, non-clinical)
 - dwidenoise2 (PolyForm Noncommercial License 1.0.0; non-commercial)
 - FreeSurfer (EULA; non-commercial, non-clinical)
 - FSL (non-commercial)
 - DSI Studio (CC BY-NC-SA 4.0 terms via DSI Studio license)
 - ACPC-detect (ART) (NITRC lists "Free For Non-Commercial Use Only, OASIS")
 - TIPL (dual license includes a proprietary option; GPL terms are referenced)
+- rpg-degibbs (non-commercial, non-clinical)
 
 Public domain or mixed:
 - AFNI (public domain for large portions; multiple bundled components with other licenses)
@@ -29,6 +31,8 @@ Permissive licenses:
 
 Other notes:
 - Node.js includes additional third-party license notices in its upstream LICENSE file.
+- dwidenoise is built into the MRtrix3 main-branch rather than shipped as a seperate tree;
+  it is licensed separately from MRtrix3 itself.
 - dwidenoise2 is built into the MRtrix3 development-branch image rather than shipped
   as a separate tree; it is licensed separately from MRtrix3 itself.
 
@@ -2338,6 +2342,47 @@ IN THE SOFTWARE.
 Note: the upstream Node.js LICENSE file also contains third-party license
 notices for bundled dependencies. The full file can be found at
 https://raw.githubusercontent.com/nodejs/node/master/LICENSE.
+
+## [rpg-degibbs](https://github.com/NYU-DiffusionMRI/rpg-degibbs?tab=License-1-ov-file) (non-commericial, non-clinical)
+
+Permission is hereby granted, free of charge, to any non-commercial entity (‘Recipient’) obtaining a copy of this software and
+associated documentation files (the ‘Software’), to the Software solely for non-commercial research, including the rights to
+use, copy and modify the Software, subject to the following conditions:
+1. The above copyright notice and this permission notice shall be included by Recipient in all copies or substantial portions
+of the Software.
+2. THE SOFTWARE IS PROVIDED ‘AS IS’, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF ORIN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+3. In no event shall NYU be liable for direct, indirect, special, incidental or consequential damages in connection with the 
+Software. Recipient will defend, indemnify and hold NYU harmless from any claims or liability resulting from the use of the 
+Software by recipient.
+4. Neither anything contained herein nor the delivery of the Software to recipient shall be deemed to grant the Recipient any 
+right or licenses under any patents or patent application owned by NYU.
+5. The Software may only be used for non-commercial research and may not be used for clinical care.
+6. Any publication by Recipient of research involving the Software shall cite the references listed below.
+
+**Reference**
+Lee et al., Magnetic Resonance in Medicine 2021 (http://doi.org/10.1002/mrm.28830)
+
+## [dwidenoise](https://mrtrix.readthedocs.io/en/dev/reference/commands/dwidenoise.html) (non-commercial, non-clinical)
+
+Author: Daan Christiaens (daan.christiaens@kcl.ac.uk) and Jelle Veraart (jelle.veraart@nyumc.org) and J-Donald Tournier (jdtournier@gmail.com)
+
+Copyright: Copyright (c) 2016 New York University, University of Antwerp, and the MRtrix3 contributors
+
+Permission is hereby granted, free of charge, to any non-commercial entity (‘Recipient’) obtaining a copy of this software and associated documentation files (the ‘Software’), to the Software solely for non-commercial research, including the rights to use, copy and modify the Software, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included by Recipient in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED ‘AS IS’, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIESOF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BELIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF ORIN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+In no event shall NYU be liable for direct, indirect, special, incidental or consequential damages in connection with the Software. Recipient will defend, indemnify and hold NYU harmless from any claims or liability resulting from the use of the Software by recipient.
+
+Neither anything contained herein nor the delivery of the Software to recipient shall be deemed to grant the Recipient any right or licenses under any patents or patent application owned by NYU.
+
+The Software may only be used for non-commercial research and may not be used for clinical care.
+
+Any publication by Recipient of research involving the Software shall cite the references listed below.
 
 ## dwidenoise2 (PolyForm Noncommercial License 1.0.0)
 
